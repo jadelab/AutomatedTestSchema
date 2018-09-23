@@ -7,7 +7,7 @@ AutomatedTestSchema is a set of components exposed as a package that can assist 
 Out of the box unit tests can be written by creating classes and test methods under JadeTestCase in your schema. 
 
 This schema takes that functionality further by assisting with:
-- Inline Test double creation (mocking)
+- Inline [Test double](https://github.com/jadelab/AutomatedTestSchema/wiki/Test-Doubles) creation (mocking)
 - Text fixture builder for setup of complex data
 - Data Annotations for marking and filtering of Unit Tests
 - Advanced searching for which Unit tests to run
