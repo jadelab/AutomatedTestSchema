@@ -14,4 +14,24 @@ This schema takes that functionality further by assisting with:
 - Multi-threaded [batch runner](https://github.com/jadelab/AutomatedTestSchema/wiki/Batch-Runner) with output to Jenkins
 
 ## Installation
-Schema and install instructions to follow.
+- Load AutomatedTestSchema into your Jade environment
+- Import the AutomatedTestPackage into your highest schema(s)
+
+- For mocking, create ATMock::createClass() on the imported class, replacing the body of the method from ATMock::zcode_createClass
+
+- For the batch runner, create app::intialiseAutomatedTestRunner per the following code. Then create a Non-GUI application called AutomatedTestRunner, selecting intialiseAutomatedTestRunner() as the initialize method.
+```
+intialiseAutomatedTestRunner( batchRequest : Object ) updating, protected;
+
+vars
+	runTests	: ATApplicationStarter;
+	
+begin
+	create runTests transient;
+	runTests.initialiseWorkerApp( batchRequest );
+end;
+```
+
+
+
+
