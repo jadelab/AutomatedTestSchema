@@ -8,7 +8,7 @@ constantDefinitions
 		ATAssertError:                 Integer = 64000;
 		ATLifetime_Persistent:         Character = 'P';
 		ATLifetime_Transient:          Character = 'T';
-		ATVersion:                     String = "0.1.0";
+		ATVersion:                     String = "0.1.1";
 		AppNameBatchRunner:            String = "AutomatedTestRunner";
 localeDefinitions
 	5129 "English (New Zealand)" schemaDefaultLocale;
@@ -869,9 +869,12 @@ zcode functions from AutomatedTestSchema need to be copied and defined on the im
 		delete() updating; 
 		deleteClass() updating; 
 		methodCallCount(
-			object: Object; 
+			receiver: Object; 
 			methodRefOrName: Any): Integer;
 		methodCallCountPropertyName(methodName: String): String protected; 
+		methodCalled(
+			receiver: Object; 
+			methodReference: JadeMethod): Boolean;
 		methodOverride(meth: Method): IATMockMethod updating; 
 		zcode_createClass(persistentClass: Class): Class updating; 
 	)
@@ -1092,7 +1095,6 @@ Possible Future Enhancements:
 	(
  
 	jadeMethodDefinitions
-		adminModeSetter() protected; 
 		cleanSchemaFile() protected; 
 		runTestsForEnvironmentCSV() protected; 
 		runTestsForEnvironmentXML() protected; 
@@ -1280,6 +1282,7 @@ exportedPackageDefinitions
 			createTransient;
 			deleteClass;
 			methodCallCount;
+			methodCalled;
 			methodOverride;
 		)
 	ATMockMethod transientAllowed, transient 
@@ -1292,7 +1295,6 @@ exportedPackageDefinitions
 			raisesException;
 			returns;
 			sourceCode;
-			withSource;
 		)
 	AutomatedTest transient 
 		(
@@ -4766,6 +4768,9 @@ begin
 	// method text
 	posHit	:= meth.getSource().pos( annotation, 1 );
 	if posHit > 0 then
+		//
+		// need to include constants plus reserved words may not be at start of line etc
+		//
 		posMethStart		:= meth.getSource().pos( Lf & "vars", 1 );
 		if posMethStart = 0 then
 			posMethStart		:= meth.getSource().pos( Lf & "begin", 1 );
@@ -4956,7 +4961,7 @@ end;
 
 methodCallCount
 {
-methodCallCount( object 			: Object;
+methodCallCount( receiver 			: Object;
 				 methodRefOrName	: Any 
 								   ): Integer;
 
@@ -4979,7 +4984,7 @@ begin
 	
 	app.require( transientClass.findProperty( countName ) <> null, methodName & "() is not being tracked" );
 	
-	count		:= object.getPropertyValue( countName ).Integer;
+	count		:= receiver.getPropertyValue( countName ).Integer;
 	return count;
 end;
 
@@ -4994,6 +4999,22 @@ vars
 
 begin
 	return (methodName & suffixMethodCount)[1:100];
+end;
+
+}
+
+methodCalled
+{
+methodCalled( receiver 			: Object;
+			  methodReference	: JadeMethod 
+							   ): Boolean;
+
+vars
+	count	: Integer;
+	
+begin
+	count		:= methodCallCount( receiver, methodReference ).Integer;
+	return count = 1;
 end;
 
 }
@@ -6373,21 +6394,6 @@ end;
 	)
 	JadeScript (
 	jadeMethodSources
-adminModeSetter
-{
-adminModeSetter() protected;
-
-vars
-
-begin
-	beginTransaction;
-	app._getProfile.JadeUserProfile.systemUser := true;
-	commitTransaction;
-end;
-
-
-}
-
 cleanSchemaFile
 {
 cleanSchemaFile() protected;
