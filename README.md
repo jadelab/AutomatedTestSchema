@@ -10,7 +10,7 @@ This schema takes that functionality further by assisting with:
 - Inline [Test double](https://github.com/jadelab/AutomatedTestSchema/wiki/Test-Doubles) creation (mocking)
 - [Text fixture](https://github.com/jadelab/AutomatedTestSchema/wiki/Test-Fixtures) builder for setup of complex data
 - [Data Annotations](https://github.com/jadelab/AutomatedTestSchema/wiki/Annotating-Tests) for marking and filtering of Unit Tests
-- Advanced searching for which Unit tests to run
+- [Advanced searching](https://github.com/jadelab/AutomatedTestSchema/wiki/Test-Locator) to find which Unit tests to run
 - Multi-threaded [batch runner](https://github.com/jadelab/AutomatedTestSchema/wiki/Batch-Runner) with output to Jenkins
 
 ## Installation
