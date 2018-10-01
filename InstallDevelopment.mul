@@ -1,0 +1,4 @@
+#MULTIPLE_SCHEMA_EXTRACT
+AutomatedTestSchema.scm AutomatedTestSchema.ddb
+tests\AutomatedTestSchema_TestInternals.scm tests\AutomatedTestSchema_TestInternals.ddb
+tests\AutomatedTestSchema_DemoTestDoubles.scm tests\AutomatedTestSchema_DemoTestDoubles.ddb

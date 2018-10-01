@@ -5,31 +5,36 @@ AutomatedTestSchema subschemaOf RootSchema completeDefinition;
 importedPackageDefinitions
 constantDefinitions
 	categoryDefinition ATGeneral
+		ATAppNameBatchRunner:          String = "AutomatedTestRunner";
 		ATAssertError:                 Integer = 64000;
 		ATLifetime_Persistent:         Character = 'P';
 		ATLifetime_Transient:          Character = 'T';
 		ATVersion:                     String = "0.1.1";
-		AppNameBatchRunner:            String = "AutomatedTestRunner";
 localeDefinitions
 	5129 "English (New Zealand)" schemaDefaultLocale;
 libraryDefinitions
 typeHeaders
 	AutomatedTestSchema subclassOf RootSchemaApp transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	AutomatedTest subclassOf Object abstract, transient; 
-	ATBatchCommandLine subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchController subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchGenerateCSV subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchGenerateXML subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchListener subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchResult subclassOf AutomatedTest abstract, transient; 
+	ATBatch subclassOf AutomatedTest abstract, transient; 
+	ATBatchController subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
+	ATBatchListener subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
+	ATBatchOutputCSV subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
+	ATBatchOutputController subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
+	ATBatchOutputNUnit subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
+	ATBatchResult subclassOf ATBatch abstract, transient; 
 	ATBatchRoot subclassOf ATBatchResult transient; 
 	ATBatchSchemaTests subclassOf ATBatchResult transient; 
 	ATBatchTest subclassOf ATBatchResult transient; 
-	ATBatchRunner subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchWorkerInitialiser subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
+	ATBatchRunner subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
+	ATBatchRunnerCommand subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
+	ATBatchSettings subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
+	ATBatchTestExecuter subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
+	ATBatchWorkerInitialiser subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
 	ATBuilder subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
 	ATChangeTracker subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
 	ATChangeTrackerObject subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
+	ATCommandLineBuilder subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
 	ATCommandLineReader subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
 	ATDatabase subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
 	ATDeltaMode subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
@@ -38,6 +43,7 @@ typeHeaders
 	ATFixtureMaker subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
 	ATGarbageCollector subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
 	ATLocator subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
+	ATLocatorSettings subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
 	ATMock subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
 	ATMockMethod subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
 	ATPurger subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
@@ -45,6 +51,7 @@ typeHeaders
 	ATSchemaFileCleaner subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
 	ATVariableCollection subclassOf AutomatedTest abstract; 
 	ATVariableStringArray subclassOf ATVariableCollection transient, transientAllowed, subclassTransientAllowed; 
+	ATXmlBuilder subclassOf AutomatedTest transient; 
 	ATAssertException subclassOf NormalException transient, transientAllowed, subclassTransientAllowed; 
 	GAutomatedTestSchema subclassOf RootSchemaGlobal transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	SAutomatedTestSchema subclassOf RootSchemaSession transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
@@ -52,8 +59,43 @@ typeHeaders
 	ATBatchTestDict subclassOf MemberKeyDictionary loadFactor = 66, transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	ATChangeTrackerObjectDict subclassOf MemberKeyDictionary loadFactor = 66, transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchRequestArray subclassOf ObjectArray loadFactor = 66, transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
+	IATBatchOutputArray subclassOf ObjectArray loadFactor = 66, transient, transientAllowed, subclassTransientAllowed; 
  
 interfaceDefs
+	IASettingsBuilder 
+	(
+ 
+	jadeMethodDefinitions
+		buildList(list: StringArray): String;
+		buildValue(
+			item: String; 
+			value: Any): String;
+		buildValueList(
+			item: String; 
+			values: StringArray): String;
+	)
+ 
+	IASettingsReader 
+	(
+ 
+	jadeMethodDefinitions
+		getValue(item: String): String;
+		getValueWithDefault(
+			item: String; 
+			default: Any): String;
+		getValues(
+			item: String; 
+			list: StringArray input);
+	)
+ 
+	IATBatchOutput 
+	(
+ 
+	jadeMethodDefinitions
+		generate(root: ATBatchRoot);
+		get(): String;
+	)
+ 
 	IATBuilderModify 
 	(
  
@@ -199,6 +241,7 @@ membershipDefinitions
 	ATBatchTestDict of ATBatchTest ;
 	ATChangeTrackerObjectDict of ATChangeTrackerObject ;
 	ATBatchRequestArray of ATBatchSchemaTests ;
+	IATBatchOutputArray of IATBatchOutput ;
  
 typeDefinitions
 	Object completeDefinition
@@ -226,47 +269,26 @@ typeDefinitions
 	AutomatedTest completeDefinition
 	(
 	)
-	ATBatchCommandLine completeDefinition
+	ATBatch completeDefinition
 	(
-	constantDefinitions
-		OutputTypeCSV:                 String = "csv";
-		OutputTypeXML:                 String = "xml";
-	attributeDefinitions
-		paramOutputType:               String;
-		paramSchema:                   String;
-		paramSchemaSubschemas:         Boolean;
-		paramWorkers:                  Integer;
-	referenceDefinitions
-		batch:                         ATBatchController;
-		commandLineReader:             ATCommandLineReader;
-		finder:                        ATLocator  readonly; 
-		gc:                            ATGarbageCollector  protected; 
- 
-	jadeMethodDefinitions
-		create() updating; 
-		delete() updating; 
-		run() updating; 
-		runFromCommandLine() updating; 
 	)
 	ATBatchController completeDefinition
 	(
-	attributeDefinitions
-		appName:                       String[51];
-		batchSize:                     Integer;
-		skipUnsupportedSchemas:        Boolean;
-		sleepTime:                     Integer;
-		workers:                       Integer;
+	constantDefinitions
+		RecheckTime:                   Integer = 50;
 	referenceDefinitions
 		allBatchTestsActive:           ATBatchRequestArray  implicitMemberInverse, protected; 
 		allBatchTestsUnfilled:         ATBatchSchemaTestsDict  implicitMemberInverse, protected; 
-		allMethods:                    MethodColl  implicitMemberInverse, readonly; 
+		allUnitTests:                  MethodColl  implicitMemberInverse, readonly; 
+		gc:                            ATGarbageCollector  protected; 
 		root:                          ATBatchRoot  readonly; 
+		settings:                      ATBatchSettings;
  
 	jadeMethodDefinitions
 		batchRootCreate() updating, protected; 
 		batchRootDestroy() updating, protected; 
 		batchSchemaCreate(schemaName: String): ATBatchSchemaTests protected; 
-		clear() updating, protected; 
+		clear() updating; 
 		create() updating; 
 		delete() updating; 
 		execute() updating; 
@@ -278,36 +300,7 @@ typeDefinitions
 		requestsConsolidate() protected; 
 		requestsRun() updating, protected; 
 		requestsSetup() updating, protected; 
-	)
-	ATBatchGenerateCSV completeDefinition
-	(
-	attributeDefinitions
-		includeSummary:                Boolean;
-		output:                        String readonly; 
- 
-	jadeMethodDefinitions
-		create() updating; 
-		generate(root: ATBatchRoot) updating; 
-		generateString(root: ATBatchRoot): String protected; 
-		getIntegerText(value: Integer): String protected; 
-	)
-	ATBatchGenerateXML completeDefinition
-	(
-	attributeDefinitions
-		output:                        String readonly; 
- 
-	jadeMethodDefinitions
-		generate(root: ATBatchRoot) updating; 
-		generateString_NUNIT(root: ATBatchRoot): String updating, protected; 
-		xmlAppend(
-			line: String; 
-			padding: Integer) updating, protected; 
-		xmlAppendCDATA(
-			contents: String; 
-			padding: Integer) updating, protected; 
-		xmlAppendLine(
-			line: String; 
-			padding: Integer) updating, protected; 
+		validateSettings() protected; 
 	)
 	ATBatchListener completeDefinition
 	(
@@ -350,6 +343,64 @@ typeDefinitions
 		testFailure is testFailure;
 		testSkipped is testSkipped;
 		testSuccess is testSuccess;
+		)
+	)
+	ATBatchOutputCSV completeDefinition
+	(
+	attributeDefinitions
+		includeSummary:                Boolean;
+		output:                        String readonly; 
+ 
+	jadeMethodDefinitions
+		create() updating; 
+		generate(root: ATBatchRoot) updating; 
+		generateString(root: ATBatchRoot): String protected; 
+		get(): String;
+		getIntegerText(value: Integer): String protected; 
+	implementInterfaces
+		IATBatchOutput
+		(
+		generate is generate;
+		get is get;
+		)
+	)
+	ATBatchOutputController completeDefinition
+	(
+	attributeDefinitions
+		fileFolder:                    String;
+	referenceDefinitions
+		outputs:                       IATBatchOutputArray  implicitMemberInverse, readonly; 
+ 
+	jadeMethodDefinitions
+		applySettings(settings: ATBatchSettings) updating; 
+	)
+	ATBatchOutputNUnit completeDefinition
+	(
+	attributeDefinitions
+		output:                        String readonly; 
+	referenceDefinitions
+		builder:                       ATXmlBuilder  protected; 
+ 
+	jadeMethodDefinitions
+		create() updating; 
+		delete() updating, protected; 
+		generate(root: ATBatchRoot) updating; 
+		generateString(root: ATBatchRoot): String updating, protected; 
+		get(): String;
+		xmlAppend(
+			line: String; 
+			padding: Integer) updating, protected; 
+		xmlAppendCDATA(
+			contents: String; 
+			padding: Integer) updating, protected; 
+		xmlAppendLine(
+			line: String; 
+			padding: Integer) updating, protected; 
+	implementInterfaces
+		IATBatchOutput
+		(
+		generate is generate;
+		get is get;
 		)
 	)
 	ATBatchResult completeDefinition
@@ -460,6 +511,70 @@ typeDefinitions
 		updateId(name: String) updating; 
 	)
 	ATBatchRunner completeDefinition
+	(
+	referenceDefinitions
+		batchSettings:                 ATBatchSettings;
+		controller:                    ATBatchController  readonly; 
+		gc:                            ATGarbageCollector  protected; 
+		locator:                       ATLocator  readonly; 
+		locatorSettings:               ATLocatorSettings;
+		outputs:                       IATBatchOutputArray  implicitMemberInverse, readonly; 
+ 
+	jadeMethodDefinitions
+		create() updating; 
+		delete() updating; 
+		run() updating; 
+		testsFind() protected; 
+		testsOutput() protected; 
+		testsRun() protected; 
+	)
+	ATBatchRunnerCommand completeDefinition
+	(
+	referenceDefinitions
+		gc:                            ATGarbageCollector  protected; 
+		reader:                        IASettingsReader;
+		runner:                        ATBatchRunner;
+ 
+	jadeMethodDefinitions
+		create() updating; 
+		delete() updating; 
+		execute() updating; 
+	)
+	ATBatchSettings completeDefinition
+	(
+	constantDefinitions
+		DefaultApplicationName:        String = ATAppNameBatchRunner;
+		DefaultBatchSize:              Integer = 100;
+		OutputToInterpreter:           Integer = 4;
+		DefaultOutputStyle:            Integer = OutputToInterpreter;
+		DefaultSkipUnsupportedSchemas: Boolean = true;
+		DefaultWorkers:                Integer = 4;
+		ItemApplicationName:           String = "WorkerApp";
+		ItemBatchSize:                 String = "BatchSize";
+		ItemOutputFolder:              String = "Folder";
+		ItemOutputStyle:               String = "OutputStyle";
+		ItemUnsupportedSchemas:        String = "SkipSchemas";
+		ItemWorkers:                   String = "Workers";
+		OutputToCSV:                   Integer = 1;
+		OutputToNUnit:                 Integer = 2;
+	attributeDefinitions
+		applicationName:               String;
+		batchSize:                     Integer;
+		fileFolder:                    String;
+		outputStyle:                   Integer;
+		skipUnsupportedSchemas:        Boolean;
+		workers:                       Integer;
+	referenceDefinitions
+		unitTests:                     MethodColl  implicitMemberInverse, readonly; 
+ 
+	jadeMethodDefinitions
+		create() updating; 
+		getDefaultFolderPath(): String protected; 
+		stringBuild(builder: IASettingsBuilder): String;
+		stringParse(reader: IASettingsReader) updating; 
+		validate(): String;
+	)
+	ATBatchTestExecuter completeDefinition
 	(
 	referenceDefinitions
 		allTests:                      ObjectArray  implicitMemberInverse, readonly; 
@@ -629,6 +744,25 @@ If db is replaced by the logic, it means we dont leak the default.`
 			set: Boolean; 
 			_value: String io) mapping; 
 	)
+	ATCommandLineBuilder completeDefinition
+	(
+ 
+	jadeMethodDefinitions
+		buildList(list: StringArray): String;
+		buildValue(
+			item: String; 
+			value: Any): String;
+		buildValueList(
+			item: String; 
+			values: StringArray): String;
+	implementInterfaces
+		IASettingsBuilder
+		(
+		buildList is buildList;
+		buildValue is buildValue;
+		buildValueList is buildValueList;
+		)
+	)
 	ATCommandLineReader completeDefinition
 	(
 	attributeDefinitions
@@ -636,7 +770,20 @@ If db is replaced by the logic, it means we dont leak the default.`
  
 	jadeMethodDefinitions
 		create() updating; 
-		getValue(item: String): String;
+		parseValue(item: String): String;
+		parseValueWithDefault(
+			item: String; 
+			default: Any): String;
+		parseValues(
+			item: String; 
+			list: StringArray input);
+	implementInterfaces
+		IASettingsReader
+		(
+		getValue is parseValue;
+		getValueWithDefault is parseValueWithDefault;
+		getValues is parseValues;
+		)
 	)
 	ATDatabase completeDefinition
 	(
@@ -805,14 +952,15 @@ can have some context eg. current user, current date.`
 	ATLocator completeDefinition
 	(
 	attributeDefinitions
+		annotations:                   StringArray readonly; 
+		annotationsAvoid:              StringArray readonly; 
 		methodPrefix:                  String[31];
-		sourceAnnotations:             StringArray readonly; 
-		sourceAnnotationsAvoid:        StringArray readonly; 
 	referenceDefinitions
-		allClasses:                    ClassColl  implicitMemberInverse, protected; 
-		allMethods:                    MethodColl  implicitMemberInverse, readonly; 
+		classes:                       ClassColl  implicitMemberInverse, protected; 
+		unitTests:                     MethodColl  implicitMemberInverse, readonly; 
  
 	jadeMethodDefinitions
+		addAll() updating; 
 		addClass(cls: Class) updating; 
 		addClassName(
 			schemaName: String; 
@@ -827,10 +975,27 @@ can have some context eg. current user, current date.`
 		addSchema(
 			schema: Schema; 
 			subschemas: Boolean) updating; 
+		applySettings(settings: ATLocatorSettings) updating; 
 		includeMethod(meth: Method): Boolean;
 		sourceAnnotationExists(
 			meth: Method; 
 			annotation: String): Boolean protected; 
+	)
+	ATLocatorSettings completeDefinition
+	(
+	constantDefinitions
+		ItemAnnotations:               String = "annotations";
+		ItemAnnotationsAvoid:          String = "annotationsAvoid";
+		ItemSchemas:                   String = "TestSchemas";
+	attributeDefinitions
+		annotations:                   StringArray readonly; 
+		annotationsAvoid:              StringArray readonly; 
+		schemas:                       JadeIdentifierArray readonly; 
+ 
+	jadeMethodDefinitions
+		stringBuild(builder: IASettingsBuilder): String;
+		stringParse(reader: IASettingsReader) updating; 
+		validate(): String;
 	)
 	ATMock completeDefinition
 	(
@@ -1073,6 +1238,23 @@ Possible Future Enhancements:
 		remove(entry: String) updating; 
 		removeAt(inx: Integer64): String updating; 
 	)
+	ATXmlBuilder completeDefinition
+	(
+	attributeDefinitions
+		xml:                           String;
+ 
+	jadeMethodDefinitions
+		append(
+			line: String; 
+			padding: Integer) updating, protected; 
+		appendCData(
+			contents: String; 
+			padding: Integer) updating, protected; 
+		appendLine(
+			line: String; 
+			padding: Integer) updating, protected; 
+		clear() updating; 
+	)
 	Exception completeDefinition
 	(
 	)
@@ -1096,6 +1278,8 @@ Possible Future Enhancements:
  
 	jadeMethodDefinitions
 		cleanSchemaFile() protected; 
+		runBatch() protected; 
+		runRunner() protected; 
 		runTestsForEnvironmentCSV() protected; 
 		runTestsForEnvironmentXML() protected; 
 		runTestsForSchemaCSV() protected; 
@@ -1143,6 +1327,9 @@ Possible Future Enhancements:
 	(
 	)
 	ATBatchRequestArray completeDefinition
+	(
+	)
+	IATBatchOutputArray completeDefinition
 	(
 	)
 	String completeDefinition
@@ -1197,6 +1384,7 @@ AutomatedTestSchemaDb
 		ATDatabase in "autotest";
 		ATBatchController in "autotest";
 		ATBatchResult in "autotest";
+		ATXmlBuilder in "autotest";
 	)
 schemaViewDefinitions
 exportedPackageDefinitions
@@ -1258,10 +1446,9 @@ exportedPackageDefinitions
 	ATLocator transientAllowed, transient 
 		(
 		exportedPropertyDefinitions
-			allMethods readonly;
+			annotations readonly;
+			annotationsAvoid readonly;
 			methodPrefix ;
-			sourceAnnotations readonly;
-			sourceAnnotationsAvoid readonly;
 		exportedMethodDefinitions
 			addClass;
 			addClassName;
@@ -1320,11 +1507,14 @@ initialiseTestRunnerCommandline
 initialiseTestRunnerCommandline() updating, protected;
 
 vars
-	batchInitialiser	: ATBatchCommandLine;
+	batchRunnerCommand	: ATBatchRunnerCommand;
 	
 begin
-	create batchInitialiser transient;
-	batchInitialiser.runFromCommandLine();
+	create batchRunnerCommand transient;
+	batchRunnerCommand.execute();
+	
+epilog
+	delete batchRunnerCommand;
 end;
 
 }
@@ -1392,91 +1582,6 @@ end;
 }
 
 	)
-	ATBatchCommandLine (
-	jadeMethodSources
-create
-{
-create() updating;
-
-vars
-	
-begin
-	create gc transient;
-	
-	create finder transient;
-	gc.add( finder );	
-	
-	create commandLineReader transient;
-	gc.add( commandLineReader );
-	
-	create batch transient;
-	gc.add( batch );
-	
-	
-	// defaults
-	paramSchemaSubschemas	:= true;
-	paramWorkers			:= 5;
-	paramOutputType			:= OutputTypeCSV;
-end;
-}
-
-delete
-{
-delete() updating;
-
-vars
-	
-begin
-	delete gc;
-end;
-}
-
-run
-{
-run() updating;
-
-vars
-	schema		: Schema;
-	
-begin
-	app.require( paramWorkers >= 0, 'Workers must be defined' );
-	app.mustExist( paramSchema, 'Schema must be defined' );
-		
-	// find the tests
-	schema		:= rootSchema.getSchema( paramSchema );
-	app.mustExist( schema, 'Schema "' & paramSchema & '" not found' );
-	
-	finder.addSchema( schema, paramSchemaSubschemas );
-	
-	// run the tests
-	batch.workers					:= paramWorkers;
-	batch.skipUnsupportedSchemas	:= true;
-	finder.allMethods.copy( batch.allMethods );
-	batch.execute();
-		
-	
-end;
-}
-
-runFromCommandLine
-{
-runFromCommandLine() updating;
-
-vars
-	
-begin
-	paramSchema		:= commandLineReader.getValue( 'testSchema' );
-	app.mustExist( paramSchema, '"testSchema=" commandline parameter missing' );
-
-	paramWorkers	:= commandLineReader.getValue( 'workers' ).Integer;
-	
-	paramOutputType	:= commandLineReader.getValue( 'output' );
-	
-	run();
-end;
-}
-
-	)
 	ATBatchController (
 	jadeMethodSources
 batchRootCreate
@@ -1521,8 +1626,8 @@ begin
 	batchTests	:= allBatchTestsUnfilled[schemaName];
 	if batchTests <> null then
 		// may be able to keep using existing
-		if batchSize = 0 
-		or batchSize > batchTests.count then
+		if settings.batchSize = 0 
+		or settings.batchSize > batchTests.count then
 			return batchTests;
 		endif;
 		
@@ -1543,12 +1648,13 @@ end;
 
 clear
 {
-clear() protected, updating;
+clear() updating;
 
 vars
 
 begin
 	allBatchTestsUnfilled.clear();
+	allBatchTestsActive.clear();
 	
 	batchRootDestroy();
 end;
@@ -1562,11 +1668,10 @@ create() updating;
 vars
 
 begin
-	// default the app name
-	appName			:= AppNameBatchRunner;
-	batchSize		:= 50;
-	workers	:= 5;
-	sleepTime		:= 50;
+	create gc transient;
+	
+	create settings transient;
+	gc.add( settings );
 end;
 
 }
@@ -1579,6 +1684,8 @@ vars
 
 begin
 	batchRootDestroy();
+	
+	delete gc;
 end;
 
 }
@@ -1591,6 +1698,8 @@ vars
 
 begin
 	clear();
+	
+	validateSettings();
 
 	batchRootCreate();
 
@@ -1615,7 +1724,8 @@ begin
 	// wait until one of these finishes, so we can start
 	// a new one
 	
-	if workers = 0 or allBatchTestsActive.size < workers then
+	if settings.workers = 0 
+	or allBatchTestsActive.size < settings.workers then
 		return;
 	endif;
 		
@@ -1635,7 +1745,7 @@ begin
 				
 				
 			endif;
-			process.sleep(sleepTime);
+			process.sleep(RecheckTime);
 		endwhile;
 	endwhile;	
 	
@@ -1655,9 +1765,9 @@ vars
 begin
 	on Exception do requestApplicationStartException(exception, request );
 	
-	if workers > 0 then
+	if settings.workers > 0 then
 		// we're using other apps
-		app.startApplicationWithParameter( request.schemaName, appName, request );
+		app.startApplicationWithParameter( request.schemaName, settings.applicationName, request );
 	
 	else
 		// run in the same thread
@@ -1683,9 +1793,9 @@ begin
 	if exp.errorCode = 1214 then
 		// application hasnt been defined, no good, but just mark as skipped
 		write "ERROR: " & request.schemaName & " needs the " & 
-					appName & " application defined in it or a superschema";		
+					settings.applicationName & " application defined in it or a superschema";		
 		
-		if skipUnsupportedSchemas then
+		if settings.skipUnsupportedSchemas then
 			allBatchTestsActive.remove( request );
 			return Ex_Resume_Next;
 		endif;		
@@ -1769,7 +1879,7 @@ begin
 		if request.completed then
 			allBatchTestsActive.removeAt(1);
 		else	
-			process.sleep( sleepTime );			
+			process.sleep( RecheckTime );			
 		endif;
 	endwhile;
 	
@@ -1792,7 +1902,7 @@ begin
 	beginTransientTransaction;
 	
 	// add each method to a batch relevant to the schema	
-	foreach meth in allMethods do
+	foreach meth in allUnitTests do
 		methScm	:= meth.getSchema();
 		reqScm	:= batchSchemaCreate( methScm.name );
 		reqScm.addTest( meth );
@@ -1806,271 +1916,26 @@ end;
 
 }
 
-	)
-	ATBatchGenerateCSV (
-	jadeMethodSources
-create
+validateSettings
 {
-create() updating;
+validateSettings() protected;
 
 vars
-
-begin
-	includeSummary	:= true;	
-end;
-
-}
-
-generate
-{
-generate( root : ATBatchRoot ) updating;
-
-vars
+	error	: String;
 	
 begin
-	output	:= generateString(root);
-end;
-
-
-}
-
-generateString
-{
-generateString( root : ATBatchRoot ) : String protected;
-
-vars
-	schemaTests		: ATBatchSchemaTests;
-	testResult		: ATBatchTest;
-	iterScm			: Iterator;
-	iterTest		: Iterator;
-	line			: String;
-	lines			: String;
+	app.mustExist( settings, "Settings" );
 	
-begin
-	lines	:= "Schema,Test Class,Test Method,Developer,Duration,Passed,Skipped,Failed,Error";
+	error	:= settings.validate();
+	if error = null then
+		if allUnitTests.isEmpty() then
+			error	:= "No Unit tests have been provided";
+		endif;
+	endif;
 	
-	if includeSummary then
-		line	:= "All,,," 
-						& root.getDeveloperCount().String & ","
-						& root.duration.String & ","
-						& getIntegerText( root.countPassed ) & ","
-						& getIntegerText( root.countSkipped ) & ","
-						& getIntegerText( root.countFailed );
-		lines	:= lines & CrLf & line;
+	if error <> null then
+		app.require( false, error );
 	endif;	
-	
-	iterScm	:= root.allSchemaTests.createIterator();
-	while iterScm.next( schemaTests ) do
-	
-		iterTest	:= schemaTests.allTests.createIterator();
-		while iterTest.next( testResult ) do
-			line	:= testResult.schemaName & "," 
-						& testResult.className & ","
-						& testResult.methodName & ","
-						& '"' & testResult.developer & '",'
-						& testResult.duration.String & ","
-						& getIntegerText( testResult.countPassed ) & ","
-						& getIntegerText( testResult.countSkipped ) & ","
-						& getIntegerText( testResult.countFailed ) & "," 
-						& testResult.errorReason;
-
-			lines	:= lines & CrLf & line;
-		endwhile;
-		delete iterTest;
-	endwhile;
-	return lines;
-	
-epilog
-	delete iterScm;
-end;
-
-
-}
-
-getIntegerText
-{
-getIntegerText( value : Integer )
-					  : String protected;
-
-vars
-
-begin
-	if value <> 0 then
-		return value.String;
-	endif;
-	return "";
-end;
-
-}
-
-	)
-	ATBatchGenerateXML (
-	jadeMethodSources
-generate
-{
-generate( root : ATBatchRoot ) updating;
-
-vars
-	
-begin
-	output	:= generateString_NUNIT(root);
-end;
-
-
-}
-
-generateString_NUNIT
-{
-generateString_NUNIT( root : ATBatchRoot )
-						   : String protected, updating;
-
-			 
-vars
-	schemaTests		: ATBatchSchemaTests;
-	testResult		: ATBatchTest;
-	iterScm			: Iterator;
-	iterTest		: Iterator;
-	padCount		: Integer;
-	
-begin
-	xmlAppendLine( '<?xml version="1.0" encoding="UTF-8"?>', padCount );
-		
-	// xml testrun
-	xmlAppendLine( '<test-run id="%1" run-date="%2" start-time="%3" total="%4" passed="%5" failed="%6" skipped="%7" time="%8" result="%9">'.atPrint( 
-				0,
-				root.startTime.date().format( "yyyy-MM-dd" ),
-				root.startTime.time().format( "HH:mm:ss" ),
-				root.countAll,
-				root.countPassed,
-				root.countFailed,
-				root.countSkipped,
-				root.durationSecs,
-				root.result ), 
-				padCount );
-				
-	
-	padCount	:= padCount + 1;
-
-	iterScm	:= root.allSchemaTests.createIterator();
-	while iterScm.next( schemaTests ) do
-	
-		// xml testsuite
-		xmlAppendLine( '<test-suite type="%1" name="%2" result="%3" duration="%4" total="%5" passed="%6" failed="%7" skipped="%8">'.atPrint (
-						"TestSuite",
-						schemaTests.schemaName, 
-						schemaTests.result,
-						schemaTests.durationSecs,
-						schemaTests.countAll,
-						schemaTests.countPassed, 
-						schemaTests.countFailed, 
-						schemaTests.countSkipped ),
-						padCount );
-
-		padCount	:= padCount + 1;
-	
-		iterTest	:= schemaTests.allTests.createIterator();
-		while iterTest.next( testResult ) do
-
-			// xml testcase
-			xmlAppend( '<test-case classname="%1" name="%2" fullname="%3" result="%4" duration="%5" asserts="%6">'.atPrint (
-						testResult.className,
-						testResult.methodName,
-						testResult.entityName,
-						testResult.result,
-						testResult.durationSecs,
-						testResult.countFailed ),
-						padCount );
-			
-			if testResult.countFailed > 0 then
-						
-				xmlAppend( CrLf, 0 );
-				
-				padCount	:= padCount + 1;
-				xmlAppendLine( '<failure>', padCount );
-				
-				padCount	:= padCount + 1;
-				xmlAppendLine( '<message>', padCount );
-				xmlAppendCDATA( "Error: " & testResult.errorReason & CrLf & CrLf & "Line: " & testResult.errorSourceLine, padCount + 1 );
-				xmlAppendLine( '</message>', padCount );
-				
-				xmlAppendLine( '<stack-trace>', padCount );
-				xmlAppendCDATA( testResult.errorStack, padCount + 1 );
-				xmlAppendLine( '</stack-trace>', padCount );
-				padCount	:= padCount - 1;
-				
-				xmlAppendLine( '</failure>', padCount );
-				padCount	:= padCount - 1;
-				
-				xmlAppendLine( '</test-case>', padCount );
-			else
-				xmlAppendLine( '</test-case>', 0 );		// finish off on the same line for readability
-			endif;	
-			
-		endwhile;
-	
-		padCount	:= padCount - 1;
-
-		xmlAppendLine( '</test-suite>', padCount );
-	
-		delete iterTest;
-	endwhile;
-								
-	padCount	:= padCount - 1;
-	xmlAppendLine( '</test-run>', padCount);
-	return output;
-	
-epilog
-	delete iterScm;
-end;
-
-
-}
-
-xmlAppend
-{
-xmlAppend( line		: String;
-		   padding	: Integer ) protected, updating;
-
-vars
-	padText	: String;
-	
-begin
-	if padding > 0 then
-		padText	:= Tab.makeString( padding );
-	endif;
-	output	:= output & padText & line;
-end;
-
-}
-
-xmlAppendCDATA
-{
-xmlAppendCDATA( contents    : String;
-				padding		: Integer) protected, updating;
-
-vars
-	line	: String;
-	
-begin
-	line	:= "<![CDATA[ " & contents & " ]]>";
-	xmlAppendLine( line, padding );
-end;
-
-}
-
-xmlAppendLine
-{
-xmlAppendLine( line		: String;
-			   padding	: Integer ) protected, updating;
-
-vars
-	padText	: String;
-	
-begin
-	if padding > 0 then
-		padText	:= Tab.makeString( padding );
-	endif;
-	output	:= output & padText & line & CrLf;
 end;
 
 }
@@ -2249,6 +2114,340 @@ vars
 
 begin
 
+end;
+
+}
+
+	)
+	ATBatchOutputCSV (
+	jadeMethodSources
+create
+{
+create() updating;
+
+vars
+
+begin
+	includeSummary	:= true;	
+end;
+
+}
+
+generate
+{
+generate( root : ATBatchRoot ) updating;
+
+vars
+	
+begin
+	output	:= generateString(root);
+end;
+
+
+}
+
+generateString
+{
+generateString( root : ATBatchRoot ) : String protected;
+
+vars
+	schemaTests		: ATBatchSchemaTests;
+	testResult		: ATBatchTest;
+	iterScm			: Iterator;
+	iterTest		: Iterator;
+	line			: String;
+	lines			: String;
+	
+begin
+	lines	:= "Schema,Test Class,Test Method,Developer,Duration,Passed,Skipped,Failed,Error";
+	
+	if includeSummary then
+		line	:= "All,,," 
+						& root.getDeveloperCount().String & ","
+						& root.duration.String & ","
+						& getIntegerText( root.countPassed ) & ","
+						& getIntegerText( root.countSkipped ) & ","
+						& getIntegerText( root.countFailed );
+		lines	:= lines & CrLf & line;
+	endif;	
+	
+	iterScm	:= root.allSchemaTests.createIterator();
+	while iterScm.next( schemaTests ) do
+	
+		iterTest	:= schemaTests.allTests.createIterator();
+		while iterTest.next( testResult ) do
+			line	:= testResult.schemaName & "," 
+						& testResult.className & ","
+						& testResult.methodName & ","
+						& '"' & testResult.developer & '",'
+						& testResult.duration.String & ","
+						& getIntegerText( testResult.countPassed ) & ","
+						& getIntegerText( testResult.countSkipped ) & ","
+						& getIntegerText( testResult.countFailed ) & "," 
+						& testResult.errorReason;
+
+			lines	:= lines & CrLf & line;
+		endwhile;
+		delete iterTest;
+	endwhile;
+	return lines;
+	
+epilog
+	delete iterScm;
+end;
+
+
+}
+
+get
+{
+get() : String;
+
+vars
+
+begin
+	return output;
+end;
+
+}
+
+getIntegerText
+{
+getIntegerText( value : Integer )
+					  : String protected;
+
+vars
+
+begin
+	if value <> 0 then
+		return value.String;
+	endif;
+	return "";
+end;
+
+}
+
+	)
+	ATBatchOutputController (
+	jadeMethodSources
+applySettings
+{
+applySettings( settings : ATBatchSettings ) updating;
+
+vars
+
+begin
+	fileFolder	:= settings.fileFolder;
+	
+	
+end;
+
+}
+
+	)
+	ATBatchOutputNUnit (
+	jadeMethodSources
+create
+{
+create() updating;
+
+vars
+
+begin
+	create builder transient;
+end;
+
+}
+
+delete
+{
+delete() updating, protected;
+
+vars
+
+begin
+	delete builder;
+end;
+
+}
+
+generate
+{
+generate( root : ATBatchRoot ) updating;
+
+vars
+	
+begin
+	output	:= generateString(root);
+end;
+
+
+}
+
+generateString
+{
+generateString( root : ATBatchRoot )
+					 : String protected, updating;
+
+			 
+vars
+	schemaTests		: ATBatchSchemaTests;
+	testResult		: ATBatchTest;
+	iterScm			: Iterator;
+	iterTest		: Iterator;
+	padCount		: Integer;
+	
+begin
+	xmlAppendLine( '<?xml version="1.0" encoding="UTF-8"?>', padCount );
+		
+	// xml testrun
+	xmlAppendLine( '<test-run id="%1" run-date="%2" start-time="%3" total="%4" passed="%5" failed="%6" skipped="%7" time="%8" result="%9">'.atPrint( 
+				0,
+				root.startTime.date().format( "yyyy-MM-dd" ),
+				root.startTime.time().format( "HH:mm:ss" ),
+				root.countAll,
+				root.countPassed,
+				root.countFailed,
+				root.countSkipped,
+				root.durationSecs,
+				root.result ), 
+				padCount );
+				
+	
+	padCount	:= padCount + 1;
+
+	iterScm	:= root.allSchemaTests.createIterator();
+	while iterScm.next( schemaTests ) do
+	
+		// xml testsuite
+		xmlAppendLine( '<test-suite type="%1" name="%2" result="%3" duration="%4" total="%5" passed="%6" failed="%7" skipped="%8">'.atPrint (
+						"TestSuite",
+						schemaTests.schemaName, 
+						schemaTests.result,
+						schemaTests.durationSecs,
+						schemaTests.countAll,
+						schemaTests.countPassed, 
+						schemaTests.countFailed, 
+						schemaTests.countSkipped ),
+						padCount );
+
+		padCount	:= padCount + 1;
+	
+		iterTest	:= schemaTests.allTests.createIterator();
+		while iterTest.next( testResult ) do
+
+			// xml testcase
+			xmlAppend( '<test-case classname="%1" name="%2" fullname="%3" result="%4" duration="%5" asserts="%6">'.atPrint (
+						testResult.className,
+						testResult.methodName,
+						testResult.entityName,
+						testResult.result,
+						testResult.durationSecs,
+						testResult.countFailed ),
+						padCount );
+			
+			if testResult.countFailed > 0 then
+						
+				xmlAppend( CrLf, 0 );
+				
+				padCount	:= padCount + 1;
+				xmlAppendLine( '<failure>', padCount );
+				
+				padCount	:= padCount + 1;
+				xmlAppendLine( '<message>', padCount );
+				xmlAppendCDATA( "Error: " & testResult.errorReason & CrLf & CrLf & "Line: " & testResult.errorSourceLine, padCount + 1 );
+				xmlAppendLine( '</message>', padCount );
+				
+				xmlAppendLine( '<stack-trace>', padCount );
+				xmlAppendCDATA( testResult.errorStack, padCount + 1 );
+				xmlAppendLine( '</stack-trace>', padCount );
+				padCount	:= padCount - 1;
+				
+				xmlAppendLine( '</failure>', padCount );
+				padCount	:= padCount - 1;
+				
+				xmlAppendLine( '</test-case>', padCount );
+			else
+				xmlAppendLine( '</test-case>', 0 );		// finish off on the same line for readability
+			endif;	
+			
+		endwhile;
+	
+		padCount	:= padCount - 1;
+
+		xmlAppendLine( '</test-suite>', padCount );
+	
+		delete iterTest;
+	endwhile;
+								
+	padCount	:= padCount - 1;
+	xmlAppendLine( '</test-run>', padCount);
+	return output;
+	
+epilog
+	delete iterScm;
+end;
+
+
+}
+
+get
+{
+get() : String;
+
+vars
+
+begin
+	return output;
+end;
+
+}
+
+xmlAppend
+{
+xmlAppend( line		: String;
+		   padding	: Integer ) protected, updating;
+
+vars
+	padText	: String;
+	
+begin
+	if padding > 0 then
+		padText	:= Tab.makeString( padding );
+	endif;
+	output	:= output & padText & line;
+end;
+
+}
+
+xmlAppendCDATA
+{
+xmlAppendCDATA( contents    : String;
+				padding		: Integer) protected, updating;
+
+vars
+	line	: String;
+	
+begin
+	line	:= "<![CDATA[ " & contents & " ]]>";
+	xmlAppendLine( line, padding );
+end;
+
+}
+
+xmlAppendLine
+{
+xmlAppendLine( line		: String;
+			   padding	: Integer ) protected, updating;
+
+vars
+	padText	: String;
+	
+begin
+	if padding > 0 then
+		padText	:= Tab.makeString( padding );
+	endif;
+	output	:= output & padText & line & CrLf;
 end;
 
 }
@@ -2755,6 +2954,277 @@ create
 create() updating;
 
 vars
+
+begin
+	create gc transient;
+
+	create batchSettings transient;
+	gc.add( batchSettings );
+	
+	create locatorSettings transient;
+	gc.add( locatorSettings );
+	
+	create locator transient;
+	gc.add( locator );
+	
+	create controller transient;
+	gc.add( controller );
+end;
+
+}
+
+delete
+{
+delete() updating;
+
+vars
+
+begin
+	delete gc;
+end;
+
+}
+
+run
+{
+run() updating;
+
+vars
+	
+begin
+	controller.clear();
+	
+	// find the unit tests to run
+	testsFind();
+	
+	// run the tests
+	testsRun();
+	
+	// output the tests
+	testsOutput();
+end;
+
+}
+
+testsFind
+{
+testsFind() protected;
+
+vars
+
+begin
+	if locator.unitTests.isEmpty() then
+		// use the settings
+		locator.applySettings( locatorSettings );
+	endif;
+	
+	// copy our tests to the controller for processing
+	locator.unitTests.copy( controller.allUnitTests );
+	
+	if controller.allUnitTests.isEmpty() then
+		app.require( false, "No Unit tests have been provided" );
+	endif;
+end;
+
+}
+
+testsOutput
+{
+testsOutput() protected;
+
+vars
+	output	: IATBatchOutput;
+		
+begin
+	foreach output in outputs do
+		output.generate( controller.root );
+	endforeach;
+	
+	foreach output in outputs do
+		write output.get();
+	endforeach;
+end;
+
+}
+
+testsRun
+{
+testsRun() protected;
+
+vars
+
+begin
+	controller.settings		:= batchSettings;
+	controller.execute();
+end;
+
+}
+
+	)
+	ATBatchRunnerCommand (
+	jadeMethodSources
+create
+{
+create() updating;
+
+vars
+
+begin
+	create gc transient;
+	
+	create reader.Object as ATCommandLineReader transient;
+	gc.add( reader.Object );
+	
+	create runner transient;
+	gc.add( runner );
+end;
+
+}
+
+delete
+{
+delete() updating;
+
+vars
+
+begin
+	delete gc;
+end;
+
+}
+
+execute
+{
+execute() updating;
+
+vars
+	
+begin
+	// populate the settings
+	runner.batchSettings.stringParse( reader );
+	runner.locatorSettings.stringParse( reader );
+	
+	// execute
+	runner.run();	
+end;
+
+}
+
+	)
+	ATBatchSettings (
+	jadeMethodSources
+create
+{
+create() updating;
+
+vars
+
+begin
+	// defaults
+	applicationName			:= DefaultApplicationName;
+	skipUnsupportedSchemas	:= DefaultSkipUnsupportedSchemas;
+	workers					:= DefaultWorkers;
+	outputStyle				:= DefaultOutputStyle;
+	batchSize				:= DefaultBatchSize;
+	fileFolder				:= getDefaultFolderPath();
+end;
+
+}
+
+getDefaultFolderPath
+{
+getDefaultFolderPath(): String protected;
+
+vars
+
+begin
+	return app.getTempDirAppServer();
+end;
+
+}
+
+stringBuild
+{
+stringBuild( builder : IASettingsBuilder 
+				    ): String;
+
+vars
+	line	: String;
+	
+begin
+	line	:= builder.buildValue( ItemApplicationName, applicationName )
+			&  builder.buildValue( ItemBatchSize, batchSize )
+			&  builder.buildValue( ItemOutputFolder, fileFolder )
+			&  builder.buildValue( ItemOutputStyle, outputStyle )
+			&  builder.buildValue( ItemWorkers, workers )
+			&  builder.buildValue( ItemUnsupportedSchemas, skipUnsupportedSchemas );
+			
+	// all built
+	return line;
+end;
+
+}
+
+stringParse
+{
+stringParse( reader : IASettingsReader ) updating;
+
+vars
+	
+begin
+	applicationName		:= reader.getValueWithDefault( ItemApplicationName, DefaultApplicationName );
+	batchSize			:= reader.getValueWithDefault( ItemBatchSize, DefaultBatchSize ).Integer;
+	fileFolder			:= reader.getValueWithDefault( ItemOutputFolder, getDefaultFolderPath() );
+	outputStyle			:= reader.getValueWithDefault( ItemOutputStyle, DefaultOutputStyle ).Integer;
+	workers				:= reader.getValueWithDefault( ItemWorkers, DefaultWorkers ).Integer;
+	skipUnsupportedSchemas	:= reader.getValueWithDefault( ItemUnsupportedSchemas, DefaultSkipUnsupportedSchemas ).Boolean;
+end;
+
+}
+
+validate
+{
+validate(): String;
+
+vars
+	
+begin
+	if applicationName = null then
+		return "Application name must be set";
+	endif;
+	
+	if workers < 0 then
+		return "Number of Application workers must be 0 or greater";
+	endif;
+	
+	if batchSize <= 0 then
+		return "Invalid batch size";
+	endif;
+	
+	if outputStyle.isOneOf(OutputToCSV, OutputToNUnit, OutputToInterpreter ) = false then
+		return "Output style invalid";
+	endif;
+
+	if outputStyle <> OutputToInterpreter then
+		if fileFolder = null then
+			return "File Folder must be set";
+		endif;
+	endif;
+	
+	// settings look ok
+	return null;
+end;
+
+}
+
+	)
+	ATBatchTestExecuter (
+	jadeMethodSources
+create
+{
+create() updating;
+
+vars
 	listenerObject	: ATBatchListener;
 	
 begin
@@ -2835,7 +3305,7 @@ runTests
 runTests(batchOfTests : ATBatchSchemaTests input);
 
 vars
-	tester			: ATBatchRunner;
+	tester			: ATBatchTestExecuter;
 	
 begin
 	on Exception do runTestsException( exception, batchOfTests );
@@ -3751,6 +4221,70 @@ end;
 }
 
 	)
+	ATCommandLineBuilder (
+	jadeMethodSources
+buildList
+{
+buildList( list : StringArray ): String;
+
+vars
+	line	: String;
+	values	: String;
+	value	: String;
+	
+begin
+	// append records
+	foreach value in list do
+		values	:= values & value & ",";
+	endforeach;
+	
+	if values <> null then
+		values	:= values[1:values.length()-1];
+	endif;
+	return values;
+end;
+
+}
+
+buildValue
+{
+buildValue( item		: String;
+			value		: Any
+					   ): String;
+
+vars
+	valueToExport	: String;
+	
+begin
+	// might need to put quotes around the item
+	valueToExport	:= value.String;
+	if valueToExport.pos( " ", 1 ) > 0 then
+		valueToExport	:= '"' & valueToExport & '"';
+	endif;
+	
+	// build the string up
+	return " " & item & "=" & valueToExport;
+end;
+
+}
+
+buildValueList
+{
+buildValueList( item		: String;
+				values		: StringArray
+						   ): String;
+
+vars
+	listValues	: String;
+	
+begin
+	listValues	:= buildList( values );
+	return buildValue( item, listValues );
+end;
+
+}
+
+	)
 	ATCommandLineReader (
 	jadeMethodSources
 create
@@ -3765,10 +4299,10 @@ end;
 
 }
 
-getValue
+parseValue
 {
-getValue( item	: String 
-			   ): String;
+parseValue( item	: String
+				   ): String;
 
 vars
 	pos			: Integer;
@@ -3801,6 +4335,57 @@ begin
 		endif;
 	endif;
 	return contents;
+end;
+
+}
+
+parseValueWithDefault
+{
+parseValueWithDefault( item		: String;
+					   default	: Any 
+							   ): String;
+
+vars
+	value	: String;
+	
+begin
+	value	:= parseValue( item );
+	if value = null then
+		return default.String;
+	else
+		return value;
+	endif;
+end;
+
+}
+
+parseValues
+{
+parseValues( item	: String;
+			 list	: StringArray input );
+
+vars
+	values	: String;
+	value	: String;
+	inx		: Integer;
+	
+begin
+	// get the entry
+	values	:= parseValue( item );
+
+	// append records
+	if values <> null then
+		inx		:= 1;
+		while true do
+			value	:= values.scanUntil( ",", inx );
+			list.add( value );
+			
+			if inx = 0 then
+				break;
+			endif;
+			inx	:= inx + 1;
+		endwhile;
+	endif;
 end;
 
 }
@@ -4557,6 +5142,18 @@ end;
 	)
 	ATLocator (
 	jadeMethodSources
+addAll
+{
+addAll() updating;
+
+vars
+
+begin
+	addSchema( rootSchema, true );
+end;
+
+}
+
 addClass
 {
 addClass(cls : Class) updating;
@@ -4571,10 +5168,10 @@ begin
 	or cls.inheritsFrom( JadeTestCase ) = false then
 		return;
 	endif;
-	if allClasses.includes( cls ) then
+	if classes.includes( cls ) then
 		return;
 	endif;
-	allClasses.add( cls );
+	classes.add( cls );
 	
 	// find and add all methods
 	create meths transient;
@@ -4677,12 +5274,12 @@ addMethod( meth : Method );
 vars
 	
 begin
-	if allMethods.includes( meth ) then
+	if unitTests.includes( meth ) then
 		return;
 	endif;
 	
 	if includeMethod( meth ) then
-		allMethods.add( meth );
+		unitTests.add( meth );
 	endif;
 end;
 
@@ -4707,6 +5304,43 @@ end;
 
 }
 
+applySettings
+{
+applySettings( settings : ATLocatorSettings ) updating;
+
+vars
+	schema			: Schema;
+	schemaString	: String;
+	error			: String;
+	
+begin
+	error	:= settings.validate();
+	if error <> null then
+		app.require( false, error );
+	endif;
+	
+	// copy annotations
+	settings.annotations.copy( annotations );
+	settings.annotationsAvoid.copy( annotationsAvoid );
+
+	if settings.schemas.isEmpty() then
+		// default, add all
+		addAll();
+	else
+		// named schemas
+		foreach schemaString in settings.schemas do
+			if schemaString.toLower() = "rootschema" then
+				schema	:= rootSchema;
+			else	
+				schema	:= rootSchema.getSchema( schemaString );
+			endif;
+			addSchema( schema, true );
+		endforeach;
+	endif;
+end;
+
+}
+
 includeMethod
 {
 includeMethod( meth : Method )
@@ -4726,16 +5360,16 @@ begin
 		return false;		
 	endif;
 	
-	if sourceAnnotationsAvoid.isEmpty() = false then	
-		foreach annotation in sourceAnnotationsAvoid do
+	if annotationsAvoid.isEmpty() = false then	
+		foreach annotation in annotationsAvoid do
 			if sourceAnnotationExists( meth, annotation ) then
 				return false;
 			endif;
 		endforeach;
 	endif;
 	
-	if sourceAnnotations.isEmpty() = false then	
-		foreach annotation in sourceAnnotations do
+	if annotations.isEmpty() = false then	
+		foreach annotation in annotations do
 			if sourceAnnotationExists( meth, annotation ) then
 				found	:= true;
 				break;
@@ -4791,6 +5425,64 @@ begin
 	endwhile;
 	
 	return false;
+end;
+
+}
+
+	)
+	ATLocatorSettings (
+	jadeMethodSources
+stringBuild
+{
+stringBuild( builder : IASettingsBuilder 
+				    ): String;
+
+vars
+	line	: String;
+	
+begin
+	line	:= builder.buildValueList( ItemSchemas, schemas )
+			&  builder.buildValueList( ItemAnnotations, annotations )
+			&  builder.buildValueList( ItemAnnotationsAvoid, annotationsAvoid );
+			
+	// all built
+	return line;
+end;
+
+}
+
+stringParse
+{
+stringParse( reader : IASettingsReader ) updating;
+
+vars
+	
+begin
+	reader.getValues( ItemSchemas, schemas );
+	reader.getValues( ItemAnnotations, annotations );
+	reader.getValues( ItemAnnotationsAvoid, annotationsAvoid );	
+end;
+
+}
+
+validate
+{
+validate(): String;
+
+vars
+	schemaString	: String;
+	
+begin
+	foreach schemaString in schemas do
+		if schemaString.toUpper() <> rootSchema.name then
+			if rootSchema.getSchema( schemaString ) = null then
+				return "Schema " & schemaString & " doesn't exist";
+			endif;
+		endif;
+	endforeach;	
+	
+	// settings look ok
+	return null;
 end;
 
 }
@@ -6392,6 +7084,71 @@ end;
 }
 
 	)
+	ATXmlBuilder (
+	jadeMethodSources
+append
+{
+append( line	: String;
+		padding	: Integer ) protected, updating;
+
+vars
+	padText	: String;
+	
+begin
+	if padding > 0 then
+		padText	:= Tab.makeString( padding );
+	endif;
+	xml	:= xml & padText & line;
+end;
+
+
+}
+
+appendCData
+{
+appendCData( contents    : String;
+			 padding  	 : Integer ) protected, updating;
+
+vars
+	line	: String;
+	
+begin
+	line	:= "<![CDATA[ " & contents & " ]]>";
+	appendLine( line, padding );
+end;
+
+}
+
+appendLine
+{
+appendLine( line	: String;
+			padding	: Integer ) protected, updating;
+
+vars
+	padText	: String;
+	
+begin
+	if padding > 0 then
+		padText	:= Tab.makeString( padding );
+	endif;
+	xml	:= xml & padText & line & CrLf;
+end;
+
+}
+
+clear
+{
+clear() updating;
+
+vars
+
+begin
+	xml		:= "";
+end;
+
+}
+
+	)
 	JadeScript (
 	jadeMethodSources
 cleanSchemaFile
@@ -6467,6 +7224,58 @@ end;
 
 }
 
+runBatch
+{
+runBatch() protected;
+
+vars
+	locator		: ATLocator;
+	controller	: ATBatchController;
+	csv			: ATBatchOutputCSV;
+	file		: ATFileLogger;
+	
+begin
+	// run the tests
+	create controller transient;
+	
+	create locator transient;
+	locator.addSchema( currentSchema, true );
+	locator.unitTests.copy( controller.allUnitTests );
+		
+	controller.execute();
+	
+	// output the tests
+	create csv transient;
+	csv.generate( controller.root );
+			
+	// write to file
+	create file transient;
+	file.initialise( "UnitTestsEnvironment.csv" );
+	file.writeContents( csv.output );
+
+epilog
+	delete controller;
+	delete csv;
+	delete file;
+	delete locator;
+end;
+	
+}
+
+runRunner
+{
+runRunner() protected;
+
+vars
+	runner	: ATBatchRunner;
+	
+begin
+	create runner transient;
+	runner.run();
+end;
+
+}
+
 runTestsForEnvironmentCSV
 {
 runTestsForEnvironmentCSV() protected;
@@ -6474,7 +7283,7 @@ runTestsForEnvironmentCSV() protected;
 vars
 	batch		: ATBatchController;
 	finder		: ATLocator;
-	csv			: ATBatchGenerateCSV;
+	csv			: ATBatchOutputCSV;
 	file		: ATFileLogger;
 		
 begin	
@@ -6517,7 +7326,7 @@ runTestsForEnvironmentXML() protected;
 vars
 	batch		: ATBatchController;
 	finder		: ATLocator;
-	xml			: ATBatchGenerateXML;
+	xml			: ATBatchOutputNUnit;
 	file		: ATFileWriter;
 		
 begin	
@@ -6560,7 +7369,7 @@ runTestsForSchemaCSV() protected;
 vars
 	batch		: ATBatchController;
 	finder		: ATLocator;
-	csv			: ATBatchGenerateCSV;
+	csv			: ATBatchOutputCSV;
 	file		: ATFileLogger;
 		
 begin	
@@ -6658,6 +7467,63 @@ begin
 	
 	return self[startPos : endPos - startPos + 1];
 end;
+}
+
+	)
+	IASettingsBuilder (
+	jadeMethodSources
+buildList
+{
+buildList( list : StringArray ): String;
+}
+
+buildValue
+{
+buildValue( item		: String;
+			value		: Any
+					   ): String;
+}
+
+buildValueList
+{
+buildValueList( item		: String;
+				values		: StringArray
+						   ): String;
+}
+
+	)
+	IASettingsReader (
+	jadeMethodSources
+getValue
+{
+getValue( item	: String
+			   ): String;
+}
+
+getValueWithDefault
+{
+getValueWithDefault( item		: String;
+					 default	: Any 
+							   ): String;
+}
+
+getValues
+{
+getValues( item	: String;
+		   list	: StringArray input );
+}
+
+	)
+	IATBatchOutput (
+	jadeMethodSources
+generate
+{
+generate( root : ATBatchRoot );
+}
+
+get
+{
+get(): String;
 }
 
 	)
