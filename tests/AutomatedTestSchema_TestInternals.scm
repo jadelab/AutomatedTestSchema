@@ -703,7 +703,7 @@ shouldRunBatchGivenTwoTests() unitTest;
 
 vars
 	runner	: ATBatchRunner;
-	root	: ATBatchRoot;
+	results	: ATBatchResultsRoot;
 	
 begin
 	create runner transient;
@@ -712,15 +712,17 @@ begin
 	runner.locatorSettings.annotations.add( "#DummyTest" );
 	runner.locatorSettings.schemas.add( currentSchema.name );
 	runner.locator.applySettings( runner.locatorSettings );
-		
+	
+	// turn off the output
+	
 	// run the tests
 	runner.run();
 	
 	// checks
-	root	:= runner.controller.root;
-	assertNotNull( root );
-	assertEqualsMsg( "One passed test", 1, runner.controller.root.countPassed );
-	assertEqualsMsg( "One failed test", 1, runner.controller.root.countFailed );
+	results	:= runner.controller.results;
+	assertNotNull( results );
+	assertEqualsMsg( "One passed test", 1, results.countPassed );
+	assertEqualsMsg( "One failed test", 1, results.countFailed );
 	
 epilog
 	delete runner;
@@ -781,8 +783,8 @@ begin
 	
 	assertEqualsMsg( "Application name is valid", "WorkerAppItem", settings.applicationName );
 	assertEqualsMsg( "Batch Size is valid", 10, settings.batchSize );
-	assertEqualsMsg( "File folder is valid", "fileFolderItem", settings.fileFolder );
-	assertEqualsMsg( "Output style is valid", 1, settings.outputStyle );
+	assertEqualsMsg( "File folder is valid", "fileFolderItem", settings.outputFolder );
+	assertEqualsMsg( "Output style is valid", 1, settings.outputFormat );
 	assertEqualsMsg( "Worker count is valid", 32, settings.workers );
 	assertEqualsMsg( "Unsupported schema value is valid", false, settings.skipUnsupportedSchemas );
 	
@@ -806,8 +808,8 @@ begin
 	create settings transient;
 	settings.applicationName	:= "WorkerAppItem";
 	settings.batchSize			:= 10;
-	settings.fileFolder			:= "fileFolderItem";
-	settings.outputStyle		:= ATBatchSettings.OutputToCSV;
+	settings.outputFolder		:= "fileFolderItem";
+	settings.outputFormat		:= ATBatchSettings.OutputFormatCSV;
 	settings.workers			:= 32;
 	settings.skipUnsupportedSchemas	:= false;
 	
@@ -819,8 +821,8 @@ begin
 	
 	assertEqualsMsg( "Application name is valid", settings.applicationName, reader.parseValue( ATBatchSettings.ItemApplicationName ));
 	assertEqualsMsg( "Batch Size is valid", settings.batchSize, reader.parseValue( ATBatchSettings.ItemBatchSize ).Integer);
-	assertEqualsMsg( "File folder is valid", settings.fileFolder, reader.parseValue( ATBatchSettings.ItemOutputFolder ));
-	assertEqualsMsg( "Output style is valid", settings.outputStyle, reader.parseValue( ATBatchSettings.ItemOutputStyle ).Integer);
+	assertEqualsMsg( "File folder is valid", settings.outputFolder, reader.parseValue( ATBatchSettings.ItemOutputFolder ));
+	assertEqualsMsg( "Output format is valid", settings.outputFormat, reader.parseValue( ATBatchSettings.ItemOutputFormat ).Integer);
 	assertEqualsMsg( "Worker count is valid", settings.workers, reader.parseValue( ATBatchSettings.ItemWorkers ).Integer);
 	assertEqualsMsg( "Unsupported schema value is valid", settings.skipUnsupportedSchemas, reader.parseValue( ATBatchSettings.ItemUnsupportedSchemas ).Boolean);
 	
@@ -886,7 +888,7 @@ shouldGenerateCSV() unitTest;
 vars
 	batch		: ATBatchController;
 	locator		: ATLocator;
-	csv			: ATBatchOutputCSV;
+	csv			: ATBatchOutputFormatCSV;
 			
 begin	
 	// find the tests
@@ -923,7 +925,7 @@ shouldGenerateXML() unitTest;
 vars
 	batch		: ATBatchController;
 	finder		: ATLocator;
-	xml			: ATBatchOutputNUnit;
+	xml			: ATBatchOutputFormatNUnit;
 			
 begin	
 	// find the tests
