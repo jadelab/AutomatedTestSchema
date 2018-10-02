@@ -11,7 +11,7 @@ This schema takes that functionality further by assisting with:
 - [Text fixture](https://github.com/jadelab/AutomatedTestSchema/wiki/Test-Fixtures) builder for setup of complex data
 - [Data Annotations](https://github.com/jadelab/AutomatedTestSchema/wiki/Annotating-Tests) for marking and filtering of Unit Tests
 - [Advanced searching](https://github.com/jadelab/AutomatedTestSchema/wiki/Test-Locator) to find which Unit tests to run
-- Multi-threaded [batch runner](https://github.com/jadelab/AutomatedTestSchema/wiki/Batch-Runner) with output to Jenkins
+- Multi-threaded [batch runner](https://github.com/jadelab/AutomatedTestSchema/wiki/Batch-Runner) with predefined ouput to csv and Jenkins
 
 ## Installation
 - Load AutomatedTestSchema into your Jade environment
@@ -24,7 +24,7 @@ This schema takes that functionality further by assisting with:
 intialiseAutomatedTestRunner( batchRequest : Object ) updating, protected;
 
 vars
-	runTests	: ATApplicationStarter;
+	runTests	: ATBatchWorkerInitialiser;
 	
 begin
 	create runTests transient;
