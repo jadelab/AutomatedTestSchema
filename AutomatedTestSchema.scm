@@ -1372,7 +1372,7 @@ Possible Future Enhancements:
 	(
  
 	jadeMethodDefinitions
-		cleanSchemaFile() protected; 
+		cleanSchemaFiles() protected; 
 		runBatchForCurrentSchemaTreeToCSV() protected; 
 		runBatchForDataSchemaToJenkins() protected; 
 		runBatchForEnvironment() protected; 
@@ -7583,9 +7583,9 @@ end;
 	)
 	JadeScript (
 	jadeMethodSources
-cleanSchemaFile
+cleanSchemaFiles
 {
-cleanSchemaFile() protected;
+cleanSchemaFiles() protected;
 
 constants
 	PreserveOldFile = false;
