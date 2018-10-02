@@ -11,7 +11,7 @@ This schema takes that functionality further by assisting with:
 - [Text fixture](https://github.com/jadelab/AutomatedTestSchema/wiki/Test-Fixtures) builder for setup of complex data
 - [Data Annotations](https://github.com/jadelab/AutomatedTestSchema/wiki/Annotating-Tests) for marking and filtering of Unit Tests
 - [Advanced searching](https://github.com/jadelab/AutomatedTestSchema/wiki/Test-Locator) to find which Unit tests to run
-- Multi-threaded [batch runner](https://github.com/jadelab/AutomatedTestSchema/wiki/Batch-Runner) with predefined ouput to csv and Jenkins
+- Multi-threaded [batch runner](https://github.com/jadelab/AutomatedTestSchema/wiki/Batch-Runner) with predefined output to csv and Jenkins
 
 ## Installation
 - Load AutomatedTestSchema into your Jade environment
@@ -31,7 +31,12 @@ begin
 	runTests.initialiseWorkerApp( batchRequest );
 end;
 ```
+## Contributing
+Any contribution to this project, be-it coding, testing, documentation or ideas is most welcome. 
 
+Developers can contribute to any or all schemas. 
+
+Until a formal source control tool is available please submit full schema files that have been stripped all environmental content. This can be done by running AutomatedTestSchema::JadeScript::cleanSchemaFiles().
 
 
 
