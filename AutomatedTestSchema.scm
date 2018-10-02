@@ -9,7 +9,7 @@ constantDefinitions
 		ATAssertError:                 Integer = 64000;
 		ATLifetime_Persistent:         Character = 'P';
 		ATLifetime_Transient:          Character = 'T';
-		ATVersion:                     String = "0.1.1";
+		ATVersion:                     String = "0.1.2";
 localeDefinitions
 	5129 "English (New Zealand)" schemaDefaultLocale;
 libraryDefinitions
@@ -80,7 +80,9 @@ interfaceDefs
 	(
  
 	jadeMethodDefinitions
-		deliver(contents: String);
+		deliver(
+			label: String; 
+			contents: String);
 	)
  
 	IATBuilderModify 
@@ -458,9 +460,13 @@ typeDefinitions
 	)
 	ATBatchOutputTargetFile completeDefinition
 	(
+	attributeDefinitions
+		folder:                        String;
  
 	jadeMethodDefinitions
-		deliver(contents: String) updating; 
+		deliver(
+			label: String; 
+			contents: String);
 	implementInterfaces
 		IATBatchOutputTarget
 		(
@@ -471,7 +477,9 @@ typeDefinitions
 	(
  
 	jadeMethodDefinitions
-		deliver(contents: String);
+		deliver(
+			label: String; 
+			contents: String) updating; 
 	implementInterfaces
 		IATBatchOutputTarget
 		(
@@ -627,7 +635,8 @@ typeDefinitions
 		DefaultBatchSize:              Integer = 100;
 		OutputFormatBasic:             Integer = 1;
 		DefaultOutputFormats:          Integer = OutputFormatBasic;
-		DefaultOutputTarget:           Integer = 1;
+		OutputTargetInterpreter:       Integer = 1;
+		DefaultOutputTarget:           Integer = OutputTargetInterpreter;
 		DefaultSkipUnsupportedSchemas: Boolean = true;
 		DefaultWorkers:                Integer = 4;
 		ItemApplicationName:           String = "WorkerApp";
@@ -640,7 +649,6 @@ typeDefinitions
 		OutputFormatNUnit:             Integer = 2;
 		OutputFormatNone:              Integer = 0;
 		OutputTargetFile:              Integer = 2;
-		OutputTargetInterpreter:       Integer = 1;
 		OutputTargetNone:              Integer = 0;
 	attributeDefinitions
 		applicationName:               String;
@@ -1052,15 +1060,16 @@ can have some context eg. current user, current date.`
 			schemaName: String; 
 			className: String) updating; 
 		addClasses(
-			parentClass: Class; 
-			targetSchema: Schema) updating; 
+			targetSchema: Schema; 
+			parentClass: Class) updating; 
 		addClassesDown(
-			parentClass: Class; 
-			targetSchema: Schema) updating; 
+			targetSchema: Schema; 
+			parentClass: Class) updating; 
 		addMethod(meth: Method);
 		addSchema(
 			schema: Schema; 
 			subschemas: Boolean) updating; 
+		addSchemaName(schemaName: String) updating; 
 		applySettings(settings: ATLocatorSettings) updating; 
 		includeMethod(meth: Method): Boolean;
 		sourceAnnotationExists(
@@ -1364,11 +1373,9 @@ Possible Future Enhancements:
  
 	jadeMethodDefinitions
 		cleanSchemaFile() protected; 
-		runBatch() protected; 
-		runRunner() protected; 
-		runTestsForEnvironmentCSV() protected; 
-		runTestsForEnvironmentXML() protected; 
-		runTestsForSchemaCSV() protected; 
+		runBatchForCurrentSchemaTreeToCSV() protected; 
+		runBatchForDataSchemaToJenkins() protected; 
+		runBatchForEnvironment() protected; 
 	)
 	JadeTestCase completeDefinition
 	(
@@ -1633,7 +1640,7 @@ vars
 	
 begin
 	if target = null then
-		write "ASSERT: " & targetName & " must be defined";
+//		write "ASSERT: " & targetName & " must be defined";
 	
 	    create exp transient;
 		exp.errorCode := ATAssertError;
@@ -1657,7 +1664,7 @@ vars
 	
 begin
 	if not trueToPass then
-		write "ASSERT: " & messageOnError;
+//		write "ASSERT: " & messageOnError;
 	
 	    create exp transient;
 		exp.errorCode := ATAssertError;
@@ -2229,6 +2236,7 @@ begin
 	targetFactory.createTargets( settings.outputTarget, 
 								 settings.outputFolder,
 								 outputTargets );
+
 epilog
 	delete targetFactory;
 	delete formatFactory;
@@ -2269,15 +2277,17 @@ vars
 	format		: IATBatchOutputFormat;
 	target		: IATBatchOutputTarget;
 	contents	: String;	
+	label		: String;
 	
 begin
 	foreach format in outputFormats do
 		// generate the results
 		contents	:= format.getContents( results );	
+		label		:= format.getLabel( results );
 		
 		// write to the outputs
 		foreach target in outputTargets do
-			target.deliver( contents );
+			target.deliver( label, contents );
 		endforeach;
 	endforeach;
 end;
@@ -2296,8 +2306,10 @@ vars
 	output	: String;
 	
 begin
-	output	:=  "Unit Test Run complete:" & CrLf &
-				" " & root.countPassed.String.padBlanks( 4 ) & " Passed";
+	output	:=  " " & root.countPassed.String.padBlanks( 4 ) & " Passed" & CrLf &
+				" " & root.countFailed.String.padBlanks( 4 ) & " Failed" & CrLf &
+				" " & root.countSkipped.String.padBlanks( 4 ) & " Skipped";
+				
 	return output;
 end;
 
@@ -2322,10 +2334,16 @@ getLabel( resultsRoot : ATBatchResultsRoot
 						): String;
 
 vars
-
+	fileTitle	: String;
+	
 begin
-	return "Unit Test Run";
+	fileTitle	:= resultsRoot.startTime.date().format( "yyyyMMdd" ) & "_" 
+					& resultsRoot.startTime.time().format( "HHmmss" ) &
+					" UnitTestResults.txt";
+	
+	return fileTitle;
 end;
+
 
 }
 
@@ -2651,7 +2669,7 @@ end;
 getContents
 {
 getContents( resultsRoot : ATBatchResultsRoot 
-				): String updating;
+						): String updating;
 
 vars
 
@@ -2741,7 +2759,7 @@ vars
 	
 begin
 	create target transient;
-	
+	target.folder	:= folder;
 	return target;
 end;
 
@@ -2787,13 +2805,21 @@ end;
 	jadeMethodSources
 deliver
 {
-deliver( contents : String) updating;
+deliver(label		: String;
+	    contents 	: String );
 
+// ignore folders for now
+		
 vars
-
+	logger	: ATFileLogger;
+	
 begin
-	write "WRITE TO FILE:";
-	write contents;
+	create logger transient;
+	logger.initialise( label );
+	logger.writeContents( contents );
+	
+epilog
+	delete logger;
 end;
 
 }
@@ -2803,11 +2829,13 @@ end;
 	jadeMethodSources
 deliver
 {
-deliver(contents : String);
+deliver(label		: String;
+	    contents 	: String ) updating;
 
 vars
 
 begin
+	write label;
 	write contents;
 end;
 
@@ -3521,6 +3549,7 @@ getDefaultFolderPath(): String protected;
 vars
 
 begin
+	return null;
 	return app.getTempDirAppServer();
 end;
 
@@ -3584,14 +3613,12 @@ begin
 		return "Invalid batch size";
 	endif;
 	
-	if outputFormat.isOneOf(OutputFormatCSV, OutputFormatNUnit, OutputFormatBasic ) = false then
-		return "Output format invalid";
+	if outputFormat < 0 then
+		return "Output format must be set";
 	endif;
-
-	if outputFormat <> OutputFormatBasic then
-		if outputFolder = null then
-			return "File Folder must be set";
-		endif;
+	
+	if outputTarget < 0 then
+		return "Output target must be set";
 	endif;
 	
 	// settings look ok
@@ -5592,8 +5619,9 @@ end;
 
 addClasses
 {
-addClasses( parentClass		: Class;
-			targetSchema	: Schema ) updating;
+addClasses( targetSchema	: Schema;
+			parentClass		: Class
+					) updating;
 
 vars
 	subClasses		: ClassColl;
@@ -5630,8 +5658,9 @@ end;
 
 addClassesDown
 {
-addClassesDown( parentClass 	: Class;
-				targetSchema	: Schema ) updating;
+addClassesDown( targetSchema	: Schema;
+				parentClass 	: Class
+							) updating;
 
 vars
 	schema	: Schema;
@@ -5639,12 +5668,12 @@ vars
 		
 begin
 	// do for the current schema
-	addClasses( parentClass, targetSchema );
+	addClasses( targetSchema, parentClass );
 
 	// now do for subschemas
 	schemas	:= targetSchema.getPropertyValue( Schema::subschemas.name ).SchemaNDict;
 	foreach schema in schemas do
-		addClassesDown( parentClass, schema );
+		addClassesDown( schema, parentClass );
 	endforeach;
 end;
 
@@ -5679,10 +5708,30 @@ begin
 	app.mustExist( schema, "Schema" );
 
 	if subschemas then
-		addClassesDown( JadeTestCase, schema );
+		addClassesDown( schema, JadeTestCase );
 	else
-		addClasses( JadeTestCase, schema );
+		addClasses( schema, JadeTestCase );
 	endif;
+end;
+
+}
+
+addSchemaName
+{
+addSchemaName( 	schemaName	: String ) updating;
+
+vars
+	scm		: Schema;
+	cls		: Class;
+	
+begin
+	scm		:= rootSchema.getSchema( schemaName );
+	app.mustExist( scm, "Schema needs to exist: " & schemaName );
+	
+	cls		:= scm.getClass( JadeTestCase.name );
+	app.mustExist( cls, "Class needs to exist: " & cls.name );
+	
+	addClassesDown( scm, cls );
 end;
 
 }
@@ -7607,47 +7656,48 @@ end;
 
 }
 
-runBatch
+runBatchForCurrentSchemaTreeToCSV
 {
-runBatch() protected;
+runBatchForCurrentSchemaTreeToCSV() protected;
 
 vars
-	locator		: ATLocator;
-	controller	: ATBatchController;
-	csv			: ATBatchOutputFormatCSV;
-	file		: ATFileLogger;
+	runner	: ATBatchRunner;
 	
 begin
-	// run the tests
-	create controller transient;
+	create runner transient;
+	runner.locator.addSchema( currentSchema, true );
 	
-	create locator transient;
-	locator.addSchema( currentSchema, true );
-	locator.unitTests.copy( controller.allUnitTests );
+	runner.batchSettings.outputFormat	:= ATBatchSettings.OutputFormatCSV;
+	runner.batchSettings.outputTarget	:= ATBatchSettings.OutputTargetFile;
 		
-	controller.execute();
-	
-	// output the tests
-	create csv transient;
-	csv.generate( controller.results );
-			
-	// write to file
-	create file transient;
-	file.initialise( "UnitTestsEnvironment.csv" );
-	file.writeContents( csv.output );
-
-epilog
-	delete controller;
-	delete csv;
-	delete file;
-	delete locator;
+	runner.run();
 end;
-	
+
 }
 
-runRunner
+runBatchForDataSchemaToJenkins
 {
-runRunner() protected;
+runBatchForDataSchemaToJenkins() protected;
+
+vars
+	runner	: ATBatchRunner;
+	
+begin
+	create runner transient;
+	runner.locator.annotations.add( "#IntegrationTest" );
+	runner.locator.addSchemaName( "AutomatedTestSchema_TestInternals" );
+	
+	runner.batchSettings.outputFormat	:= ATBatchSettings.OutputFormatNUnit;
+	runner.batchSettings.outputTarget	:= ATBatchSettings.OutputTargetFile;
+		
+	runner.run();
+end;
+
+}
+
+runBatchForEnvironment
+{
+runBatchForEnvironment() protected;
 
 vars
 	runner	: ATBatchRunner;
@@ -7657,132 +7707,6 @@ begin
 	runner.run();
 end;
 
-}
-
-runTestsForEnvironmentCSV
-{
-runTestsForEnvironmentCSV() protected;
-
-vars
-	batch		: ATBatchController;
-	finder		: ATLocator;
-	csv			: ATBatchOutputFormatCSV;
-	file		: ATFileLogger;
-		
-begin	
-	app.clearWriteWindow();
-
-	// find the tests
-	create finder transient;
-//	finder.sourceAnnotationsAvoid.add( '#ui' );
-	finder.addSchema(rootSchema,true);
-
-	// run the tests
-	create batch transient;
-	batch.skipUnsupportedSchemas	:= true;
-	batch.workers	:= 5;
-	finder.allMethods.copy( batch.allMethods );
-	batch.execute();
-	
-	// output the tests
-	create csv transient;
-	csv.generate( batch.root );
-	
-		
-	// write to file
-	create file transient;
-	file.initialise( "UnitTestsEnvironment.csv" );
-	file.writeContents( csv.output );
-
-epilog
-	delete batch;
-	delete csv;
-	delete file;
-	delete finder;
-end;
-}
-
-runTestsForEnvironmentXML
-{
-runTestsForEnvironmentXML() protected;
-
-vars
-	batch		: ATBatchController;
-	finder		: ATLocator;
-	xml			: ATBatchOutputFormatNUnit;
-	file		: ATFileWriter;
-		
-begin	
-	app.clearWriteWindow();
-
-	// find the tests
-	create finder transient;
-	finder.sourceAnnotationsAvoid.add( '#ui' );
-	finder.addSchema(rootSchema,true);
-	
-	// run the tests
-	create batch transient;
-	batch.workers	:= 5;
-	batch.skipUnsupportedSchemas	:= true;
-	
-	finder.allMethods.copy( batch.allMethods );
-	batch.execute();
-	
-	// output the tests
-	create xml transient;
-	xml.generate( batch.root );
-
-	// write to file
-	create file transient;
-	file.initialise( "d:\rubbish\unittests.xml" );
-	file.writeContents( xml.output );
-
-epilog
-	delete batch;
-	delete xml;
-	delete file;
-	delete finder;
-end;
-}
-
-runTestsForSchemaCSV
-{
-runTestsForSchemaCSV() protected;
-
-vars
-	batch		: ATBatchController;
-	finder		: ATLocator;
-	csv			: ATBatchOutputFormatCSV;
-	file		: ATFileLogger;
-		
-begin	
-	app.clearWriteWindow();
-
-	// find the tests
-	create finder transient;
-	finder.addSchema(currentSchema,false);
-
-	// run the tests
-	create batch transient;
-	batch.skipUnsupportedSchemas	:= true;
-	finder.allMethods.copy( batch.allMethods );
-	batch.execute();
-	
-	// output the tests
-	create csv transient;
-	csv.generate( batch.root );
-	
-	// write to file
-	create file transient;
-	file.initialise( "UnitTestsSchema.csv" );
-	file.writeContents( csv.output );
-
-epilog
-	delete batch;
-	delete csv;
-	delete file;
-	delete finder;
-end;
 }
 
 	)
@@ -7872,7 +7796,8 @@ getLabel( root : ATBatchResultsRoot
 	jadeMethodSources
 deliver
 {
-deliver(contents : String );
+deliver(label		: String;
+	    contents 	: String );
 }
 
 	)

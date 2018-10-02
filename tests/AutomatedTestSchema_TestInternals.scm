@@ -15,7 +15,6 @@ typeHeaders
 	ATTests subclassOf JadeTestCase abstract, transient, subclassTransientAllowed; 
 	ATBatchRunnerTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchSettingsTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
 	ATBuilderTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
 	ATChangeTrackerTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
 	ATCommandLineReaderTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
@@ -106,16 +105,6 @@ typeDefinitions
 		shouldConvertToString() unitTest; 
 		shouldFailValidationGivenWorkersInvalid() unitTest; 
 		shouldValidateSuccessfulGivenDefaults() unitTest; 
-	)
-	ATBatchTests completeDefinition
-	(
- 
-	jadeMethodDefinitions
-		shouldGenerateCSV() unitTest; 
-		shouldGenerateXML() unitTest; 
-		testThatFails() protected, unitTest; 
-		testThatIsIgnored() protected, unitTestIgnore; 
-		testThatPasses() protected, unitTest; 
 	)
 	ATBuilderTests completeDefinition
 	(
@@ -701,6 +690,8 @@ shouldRunBatchGivenTwoTests
 {
 shouldRunBatchGivenTwoTests() unitTest;
 
+// #IntegrationTest
+
 vars
 	runner	: ATBatchRunner;
 	results	: ATBatchResultsRoot;
@@ -714,6 +705,8 @@ begin
 	runner.locator.applySettings( runner.locatorSettings );
 	
 	// turn off the output
+	runner.batchSettings.outputFormat	:= ATBatchSettings.OutputFormatCSV;
+	runner.batchSettings.outputTarget	:= ATBatchSettings.OutputTargetNone;
 	
 	// run the tests
 	runner.run();
@@ -879,123 +872,6 @@ end;
 }
 
 	)
-	ATBatchTests (
-	jadeMethodSources
-shouldGenerateCSV
-{
-shouldGenerateCSV() unitTest;
-
-vars
-	batch		: ATBatchController;
-	locator		: ATLocator;
-	csv			: ATBatchOutputFormatCSV;
-			
-begin	
-	// find the tests
-	create locator transient;
-	locator.addMethod(ATBatchTests::testThatPasses);
-	locator.addMethod(ATBatchTests::testThatFails);
-	locator.addMethod(ATBatchTests::testThatIsIgnored);
-
-	// run the tests
-	create batch transient;
-	batch.workers			:= 0;
-	locator.allMethods.copy( batch.allMethods );
-	batch.execute();
-	
-	// output the tests
-	create csv transient;
-	csv.generate( batch.root );
-	
-	// checks
-	assertTrueMsg( "testThatPasses must exist in results", csv.output.pos( "testThatPasses", 1 ) > 0);
-	assertTrueMsg( "testThatFails must exist in results", csv.output.pos( "testThatFails", 1 ) > 0);
-	
-epilog
-	delete batch;
-	delete csv;
-	delete locator;
-end;
-}
-
-shouldGenerateXML
-{
-shouldGenerateXML() unitTest;
-
-vars
-	batch		: ATBatchController;
-	finder		: ATLocator;
-	xml			: ATBatchOutputFormatNUnit;
-			
-begin	
-	// find the tests
-	create finder transient;
-	finder.addMethod(ATBatchTests::testThatPasses);
-	finder.addMethod(ATBatchTests::testThatFails);
-	finder.addMethod(ATBatchTests::testThatIsIgnored);
-
-	// run the tests
-	create batch transient;
-	batch.workers			:= 0;
-	finder.allMethods.copy( batch.allMethods );
-	batch.execute();
-	
-	// output the tests
-	create xml transient;
-	xml.generate( batch.root );
-	
-	// checks
-	assertTrueMsg( "testThatPasses must exist in results", xml.output.pos( "testThatPasses", 1 ) > 0);
-	assertTrueMsg( "testThatFails must exist in results", xml.output.pos( "testThatFails", 1 ) > 0);
-	
-epilog
-	delete batch;
-	delete xml;
-	delete finder;
-end;
-}
-
-testThatFails
-{
-testThatFails() unitTest, protected;
-
-vars
-
-begin
-	if ATBatchTests::shouldGenerateXML.isExecuting() 
-	or ATBatchTests::shouldGenerateCSV.isExecuting() then
-
-		assertFalseMsg( "I am meant to fail if called from another local unit test", true );
-	endif;
-end;
-
-}
-
-testThatIsIgnored
-{
-testThatIsIgnored() unitTestIgnore, protected;
-
-vars
-
-begin
-
-end;
-
-}
-
-testThatPasses
-{
-testThatPasses() unitTest, protected;
-
-vars
-
-begin
-	
-end;
-
-}
-
-	)
 	ATBuilderTests (
 	jadeMethodSources
 makeStartObject
@@ -1099,6 +975,7 @@ begin
 
 	// set null reference
 	expectedException(ATAssertError);
+	
 	builder.refine(target)
 		.set(TcpIpConnection::userObject, null );
 	assertEquals( self, target.userObject );
@@ -1904,7 +1781,7 @@ vars
 begin	
 	create testLocator transient;
 	
-	testLocator.addClasses( ATTests, currentSchema );
+	testLocator.addClasses( currentSchema, ATTests );
 	
 	assertTrueMsg( "Should find " & method.name, testLocator.unitTests.includes( method ));
 
@@ -1923,7 +1800,7 @@ vars
 begin	
 	create testLocator transient;
 	
-	testLocator.addClassesDown( JadeTestCase, currentSchema.superschema );
+	testLocator.addClassesDown( currentSchema.superschema, JadeTestCase );
 	
 	assertTrueMsg( "Should find " & method.name, testLocator.unitTests.includes( method ));
 
@@ -1975,7 +1852,7 @@ begin
 	
 	create locator transient;
 	locator.applySettings( settings );
-	locator.inspectModal();
+	
 	assertTrueMsg( "Only find one unit test", locator.unitTests.size() = 1 );
 	assertTrueMsg( "Only find this unit test", locator.unitTests.includes( ATLocatorTests::shouldFindMethodGivenSettings));
 	
