@@ -36,7 +36,6 @@ typeHeaders
 	AutomatedTestSchema_DemoTestDoubles subclassOf RootSchemaApp transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	GAutomatedTestSchema_DemoTestDoubles subclassOf RootSchemaGlobal transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	LaunchControlTests subclassOf JadeTestCase;
-	MissileTests subclassOf JadeTestCase transient; 
 	LaunchCode subclassOf Object;
 	LaunchControl subclassOf Object transient, transientAllowed; 
 	Missile subclassOf Object transient; 
@@ -107,17 +106,6 @@ typeDefinitions
 		demo04_TestShouldLaunchGivenValidCode() unitTest; 
 		demo05_TestShouldAbortLaunchGivenInvalidCode() unitTest; 
 	)
-	MissileTests completeDefinition
-	(
-	documentationText
-`Tests for the Missile class
-
-#IntegrationTest`
-
- 
-	jadeMethodDefinitions
-		shouldDeIceMissile() unitTest; 
-	)
 	LaunchCode completeDefinition
 	(
 	attributeDefinitions
@@ -165,7 +153,6 @@ AutomatedTestSchema_DemoTestDoublesDb
 		LaunchControl in "autoTest";
 		LaunchControlTests in "autoTest";
 		LaunchCode in "autoTest";
-		MissileTests in "autoTest";
 	)
 schemaViewDefinitions
 exportedPackageDefinitions
@@ -264,12 +251,12 @@ begin
 	
 	missile	:= missileMocker.createTransient().Missile;
 	
-	assertTrueMsg( "Missile::file has not been called", 
+	assertTrueMsg( "Missile::fire has not been called", 
 						not missileMocker.methodCalled( missile, Missile::fire ));
 	
 	missile.fire();
 	
-	assertTrueMsg( "Missile::file has been called", 
+	assertTrueMsg( "Missile::fire has been called", 
 						    missileMocker.methodCalled( missile, Missile::fire ));
 end;
 }
@@ -337,25 +324,8 @@ begin
 	
 	// asserts
 	assertTrueMsg( "Missile did not fire", fired = false );
-	assertTrueMsg( "Missile::file has not been called", not missileMocker.methodCalled( missile, Missile::fire ));
+	assertTrueMsg( "Missile::fire has not been called", not missileMocker.methodCalled( missile, Missile::fire ));
 end;
-}
-
-	)
-	MissileTests (
-	jadeMethodSources
-shouldDeIceMissile
-{
-shouldDeIceMissile() unitTest;
-
-// #SlowTest
- 
-vars
-
-begin
-
-end;
-
 }
 
 	)

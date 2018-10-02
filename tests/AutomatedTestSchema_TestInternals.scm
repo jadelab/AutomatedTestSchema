@@ -13,12 +13,14 @@ typeHeaders
 	ATFixtureMock subclassOf ATFixtures transient, transientAllowed, subclassTransientAllowed; 
 	GAutomatedTestSchema_TestInternals subclassOf GAutomatedTestSchema transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	ATTests subclassOf JadeTestCase abstract, transient, subclassTransientAllowed; 
-	ATBatchTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
+	ATBatchRunnerTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
+	ATBatchSettingsTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
 	ATBuilderTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
 	ATChangeTrackerTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
 	ATCommandLineReaderTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
 	ATDatabaseTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
 	ATGarbageCollectorTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
+	ATLocatorSettingsTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
 	ATLocatorTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
 	ATMockMethodTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
 	ATMockTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
@@ -87,15 +89,22 @@ typeDefinitions
 #dummy, #fast`
 
 	)
-	ATBatchTests completeDefinition
+	ATBatchRunnerTests completeDefinition
 	(
  
 	jadeMethodDefinitions
-		shouldGenerateCSV() unitTest; 
-		shouldGenerateXML() unitTest; 
-		testThatFails() protected, unitTest; 
-		testThatIsIgnored() protected, unitTestIgnore; 
-		testThatPasses() protected, unitTest; 
+		shouldRunBatchGivenTwoTests() unitTest; 
+		testDummySuccess() protected, unitTest; 
+		testSummaryFailure() protected, unitTest; 
+	)
+	ATBatchSettingsTests completeDefinition
+	(
+ 
+	jadeMethodDefinitions
+		shouldConvertFromString() unitTest; 
+		shouldConvertToString() unitTest; 
+		shouldFailValidationGivenWorkersInvalid() unitTest; 
+		shouldValidateSuccessfulGivenDefaults() unitTest; 
 	)
 	ATBuilderTests completeDefinition
 	(
@@ -130,8 +139,12 @@ typeDefinitions
 	(
  
 	jadeMethodDefinitions
-		shouldFindInsertedValue() unitTest; 
-		shouldNotFindValue() unitTest; 
+		shouldIgnoreDefaultWhenItemExists() unitTest; 
+		shouldReturnEmptyWhenItemIsEmpty() unitTest; 
+		shouldReturnEmptyWhenItemNotDeclared() unitTest; 
+		shouldReturnValueGivenQuotes() unitTest; 
+		shouldReturnValueWhenDeclared() unitTest; 
+		shouldUseDefaulWhenValueMissing() unitTest; 
 	)
 	ATDatabaseTests completeDefinition
 	(
@@ -148,6 +161,13 @@ typeDefinitions
 	jadeMethodDefinitions
 		shouldPurgeObjects() unitTest; 
 	)
+	ATLocatorSettingsTests completeDefinition
+	(
+ 
+	jadeMethodDefinitions
+		shouldConvertFromString() unitTest; 
+		shouldConvertToString() unitTest; 
+	)
 	ATLocatorTests completeDefinition
 	(
  
@@ -156,11 +176,13 @@ typeDefinitions
 		notAUnitTest() protected; 
 		shouldFindAllFromAllSchemas() unitTest; 
 		shouldFindAllFromCurrentSchema() unitTest; 
+		shouldFindAllTests() unitTest; 
 		shouldFindClassFromName() unitTest; 
 		shouldFindFromClass() unitTest; 
 		shouldFindFromClassAndChildren() unitTest; 
 		shouldFindFromSubschemas() unitTest; 
 		shouldFindMethod() unitTest; 
+		shouldFindMethodGivenSettings() unitTest; 
 		shouldFindMethodWithAnnotation() unitTest; 
 		shouldFindMethodWithAnnotationFromClass() unitTest; 
 		shouldFindMethodsWithPrefix() unitTest; 
@@ -662,118 +684,189 @@ end;
 }
 
 	)
-	ATBatchTests (
+	ATBatchRunnerTests (
 	jadeMethodSources
-shouldGenerateCSV
+shouldRunBatchGivenTwoTests
 {
-shouldGenerateCSV() unitTest;
+shouldRunBatchGivenTwoTests() unitTest;
+
+// #IntegrationTest
 
 vars
-	batch		: ATBatchController;
-	finder		: ATLocator;
-	csv			: ATBatchGenerateCSV;
-			
-begin	
-	// find the tests
-	create finder transient;
-	finder.addMethod(ATBatchTests::testThatPasses);
-	finder.addMethod(ATBatchTests::testThatFails);
-	finder.addMethod(ATBatchTests::testThatIsIgnored);
-
-	// run the tests
-	create batch transient;
-	batch.workers			:= 0;
-	finder.allMethods.copy( batch.allMethods );
-	batch.execute();
+	runner	: ATBatchRunner;
+	results	: ATBatchResultsRoot;
 	
-	// output the tests
-	create csv transient;
-	csv.generate( batch.root );
+begin
+	create runner transient;
+	
+	// find two tests defined on this class
+	runner.locatorSettings.annotations.add( "#DummyTest" );
+	runner.locatorSettings.schemas.add( currentSchema.name );
+	runner.locator.applySettings( runner.locatorSettings );
+	
+	// turn off the output
+	runner.batchSettings.outputFormat	:= ATBatchSettings.OutputFormatCSV;
+	runner.batchSettings.outputTarget	:= ATBatchSettings.OutputTargetNone;
+	
+	// run the tests
+	runner.run();
 	
 	// checks
-	assertTrueMsg( "testThatPasses must exist in results", csv.output.pos( "testThatPasses", 1 ) > 0);
-	assertTrueMsg( "testThatFails must exist in results", csv.output.pos( "testThatFails", 1 ) > 0);
+	results	:= runner.controller.results;
+	assertNotNull( results );
+	assertEqualsMsg( "One passed test", 1, results.countPassed );
+	assertEqualsMsg( "One failed test", 1, results.countFailed );
 	
 epilog
-	delete batch;
-	delete csv;
-	delete finder;
+	delete runner;
 end;
+
+
 }
 
-shouldGenerateXML
+testDummySuccess
 {
-shouldGenerateXML() unitTest;
+testDummySuccess() unitTest, protected;
 
-vars
-	batch		: ATBatchController;
-	finder		: ATLocator;
-	xml			: ATBatchGenerateXML;
-			
-begin	
-	// find the tests
-	create finder transient;
-	finder.addMethod(ATBatchTests::testThatPasses);
-	finder.addMethod(ATBatchTests::testThatFails);
-	finder.addMethod(ATBatchTests::testThatIsIgnored);
-
-	// run the tests
-	create batch transient;
-	batch.workers			:= 0;
-	finder.allMethods.copy( batch.allMethods );
-	batch.execute();
-	
-	// output the tests
-	create xml transient;
-	xml.generate( batch.root );
-	
-	// checks
-	assertTrueMsg( "testThatPasses must exist in results", xml.output.pos( "testThatPasses", 1 ) > 0);
-	assertTrueMsg( "testThatFails must exist in results", xml.output.pos( "testThatFails", 1 ) > 0);
-	
-epilog
-	delete batch;
-	delete xml;
-	delete finder;
-end;
-}
-
-testThatFails
-{
-testThatFails() unitTest, protected;
+// #DummyTest
 
 vars
 
 begin
-	if ATBatchTests::shouldGenerateXML.isExecuting() 
-	or ATBatchTests::shouldGenerateCSV.isExecuting() then
+	assertTrue( true );
+end;
 
-		assertFalseMsg( "I am meant to fail if called from another local unit test", true );
+}
+
+testSummaryFailure
+{
+testSummaryFailure()  unitTest, protected;
+
+// #DummyTest
+
+vars
+
+begin
+	// fail the test only if we are inside another where we want to record a failed count	
+	if app.name = ATAppNameBatchRunner then
+		assertTrue( false );
+	endif;		
+end;
+
+}
+
+	)
+	ATBatchSettingsTests (
+	jadeMethodSources
+shouldConvertFromString
+{
+shouldConvertFromString() unitTest;
+
+vars
+	settings	: ATBatchSettings;
+	reader		: ATCommandLineReader;
+	line		: String;
+	
+begin
+	create reader transient;
+	reader.commandLine	:= "SomeOther=Text WorkerApp=WorkerAppItem batchSize=10 folder=fileFolderItem outputStyle=1 workers=32 skipSchemas=false";
+
+	create settings transient;
+	settings.stringParse( reader );
+	
+	assertEqualsMsg( "Application name is valid", "WorkerAppItem", settings.applicationName );
+	assertEqualsMsg( "Batch Size is valid", 10, settings.batchSize );
+	assertEqualsMsg( "File folder is valid", "fileFolderItem", settings.outputFolder );
+	assertEqualsMsg( "Output style is valid", 1, settings.outputFormat );
+	assertEqualsMsg( "Worker count is valid", 32, settings.workers );
+	assertEqualsMsg( "Unsupported schema value is valid", false, settings.skipUnsupportedSchemas );
+	
+epilog
+	delete reader;
+	delete settings;
+end;
+}
+
+shouldConvertToString
+{
+shouldConvertToString() unitTest;
+
+vars
+	settings	: ATBatchSettings;
+	reader		: ATCommandLineReader;
+	builder		: ATCommandLineBuilder;
+	line		: String;
+	
+begin
+	create settings transient;
+	settings.applicationName	:= "WorkerAppItem";
+	settings.batchSize			:= 10;
+	settings.outputFolder		:= "fileFolderItem";
+	settings.outputFormat		:= ATBatchSettings.OutputFormatCSV;
+	settings.workers			:= 32;
+	settings.skipUnsupportedSchemas	:= false;
+	
+	create builder transient;
+	line	:= settings.stringBuild(builder);
+
+	create reader transient;
+	reader.commandLine	:= line;
+	
+	assertEqualsMsg( "Application name is valid", settings.applicationName, reader.parseValue( ATBatchSettings.ItemApplicationName ));
+	assertEqualsMsg( "Batch Size is valid", settings.batchSize, reader.parseValue( ATBatchSettings.ItemBatchSize ).Integer);
+	assertEqualsMsg( "File folder is valid", settings.outputFolder, reader.parseValue( ATBatchSettings.ItemOutputFolder ));
+	assertEqualsMsg( "Output format is valid", settings.outputFormat, reader.parseValue( ATBatchSettings.ItemOutputFormat ).Integer);
+	assertEqualsMsg( "Worker count is valid", settings.workers, reader.parseValue( ATBatchSettings.ItemWorkers ).Integer);
+	assertEqualsMsg( "Unsupported schema value is valid", settings.skipUnsupportedSchemas, reader.parseValue( ATBatchSettings.ItemUnsupportedSchemas ).Boolean);
+	
+epilog
+	delete builder;
+	delete reader;
+	delete settings;
+end;
+
+}
+
+shouldFailValidationGivenWorkersInvalid
+{
+shouldFailValidationGivenWorkersInvalid() unitTest;
+
+vars
+	settings	: ATBatchSettings;
+	result		: String;
+
+begin
+	create settings transient;
+	settings.workers	:= -1;
+	result	:= settings.validate();
+	
+	assertTrueMsg( "Settings should fail", result.toLower().pos( "worker", 1 ) > 0 );
+	
+epilog
+	delete settings;
+end;
+
+}
+
+shouldValidateSuccessfulGivenDefaults
+{
+shouldValidateSuccessfulGivenDefaults() unitTest;
+
+vars
+	settings	: ATBatchSettings;
+	result		: String;
+
+begin
+	create settings transient;
+	
+	result	:= settings.validate();
+	if result <> null then
+		result	:= " Error: " & result;
 	endif;
-end;
-
-}
-
-testThatIsIgnored
-{
-testThatIsIgnored() unitTestIgnore, protected;
-
-vars
-
-begin
-
-end;
-
-}
-
-testThatPasses
-{
-testThatPasses() unitTest, protected;
-
-vars
-
-begin
+	assertTrueMsg( "Settings should validate " & result, result = "" );
 	
+epilog
+	delete settings;
 end;
 
 }
@@ -882,6 +975,7 @@ begin
 
 	// set null reference
 	expectedException(ATAssertError);
+	
 	builder.refine(target)
 		.set(TcpIpConnection::userObject, null );
 	assertEquals( self, target.userObject );
@@ -1177,19 +1271,37 @@ end;
 	)
 	ATCommandLineReaderTests (
 	jadeMethodSources
-shouldFindInsertedValue
+shouldIgnoreDefaultWhenItemExists
 {
-shouldFindInsertedValue() unitTest;
+shouldIgnoreDefaultWhenItemExists() unitTest;
 
 vars
 	cmdLine	: ATCommandLineReader;
-		
+	
 begin
 	create cmdLine transient;
 	cmdLine.commandLine	:= "D:\Software\Jade\2016\bin\jade.exe ini=D:\Software\Jade\2016\system\jade.ini path=D:\Software\Jade\2016\system appServerPort=4505 server=SingleUser app=Jade";
 	
-	assertEqualsMsg( "Ini setting must be found", "D:\Software\Jade\2016\system\jade.ini", cmdLine.getValue( "Ini" ));
-	assertEqualsMsg( "App setting must be found", "Jade", cmdLine.getValue( "App" ));
+	assertEqualsMsg( "Default value should be ignored", "SingleUser", 
+				cmdLine.parseValueWithDefault( "server", "Default" ));
+		
+epilog
+	delete cmdLine;
+end;
+}
+
+shouldReturnEmptyWhenItemIsEmpty
+{
+shouldReturnEmptyWhenItemIsEmpty() unitTest;
+
+vars
+	cmdLine	: ATCommandLineReader;
+	
+begin
+	create cmdLine transient;
+	cmdLine.commandLine	:= "D:\Software\Jade\2016\bin\jade.exe ini=D:\Software\Jade\2016\system\jade.ini path=D:\Software\Jade\2016\system appServerPort=4505 server=SingleUser app=Jade";
+	
+	assertEqualsMsg( "Cmd setting shouldnt be found", "", cmdLine.parseValue( "Cmd" ));
 		
 epilog
 	delete cmdLine;
@@ -1197,9 +1309,9 @@ end;
 
 }
 
-shouldNotFindValue
+shouldReturnEmptyWhenItemNotDeclared
 {
-shouldNotFindValue() unitTest;
+shouldReturnEmptyWhenItemNotDeclared() unitTest;
 
 vars
 	cmdLine	: ATCommandLineReader;
@@ -1208,12 +1320,70 @@ begin
 	create cmdLine transient;
 	cmdLine.commandLine	:= "D:\Software\Jade\2016\bin\jade.exe ini=D:\Software\Jade\2016\system\jade.ini path=D:\Software\Jade\2016\system appServerPort=4505 server=SingleUser app=Jade";
 	
-	assertEqualsMsg( "Cmd setting shouldnt be found", "", cmdLine.getValue( "Cmd" ));
+	assertEqualsMsg( "Cmd setting shouldnt be found", "", cmdLine.parseValue( "Cmd" ));
 		
 epilog
 	delete cmdLine;
 end;
 
+}
+
+shouldReturnValueGivenQuotes
+{
+shouldReturnValueGivenQuotes() unitTest;
+
+vars
+	cmdLine	: ATCommandLineReader;
+		
+begin
+	create cmdLine transient;
+	cmdLine.commandLine	:= 'Path=D:\Software\Jade\2016\system appServerPort=4505 quotes="Single User" app=Jade';
+	
+	assertEqualsMsg( "Server setting must be found", "Single User", cmdLine.parseValue( "quotes" ));
+		
+epilog
+	delete cmdLine;
+end;
+
+}
+
+shouldReturnValueWhenDeclared
+{
+shouldReturnValueWhenDeclared() unitTest;
+
+vars
+	cmdLine	: ATCommandLineReader;
+		
+begin
+	create cmdLine transient;
+	cmdLine.commandLine	:= "D:\Software\Jade\2016\bin\jade.exe ini=D:\Software\Jade\2016\system\jade.ini path=D:\Software\Jade\2016\system appServerPort=4505 server=SingleUser app=Jade";
+	
+	assertEqualsMsg( "Ini setting must be found", "D:\Software\Jade\2016\system\jade.ini", cmdLine.parseValue( "Ini" ));
+	assertEqualsMsg( "App setting must be found", "Jade", cmdLine.parseValue( "App" ));
+		
+epilog
+	delete cmdLine;
+end;
+
+}
+
+shouldUseDefaulWhenValueMissing
+{
+shouldUseDefaulWhenValueMissing() unitTest;
+
+vars
+	cmdLine	: ATCommandLineReader;
+	
+begin
+	create cmdLine transient;
+	cmdLine.commandLine	:= "D:\Software\Jade\2016\bin\jade.exe ini=D:\Software\Jade\2016\system\jade.ini path=D:\Software\Jade\2016\system appServerPort=4505 server=SingleUser app=Jade";
+	
+	assertEqualsMsg( "Default value should be used", "valueIfNotThere", 
+				cmdLine.parseValueWithDefault( "valueNotThere", "valueIfNotThere" ));
+		
+epilog
+	delete cmdLine;
+end;
 }
 
 	)
@@ -1397,6 +1567,76 @@ end;
 }
 
 	)
+	ATLocatorSettingsTests (
+	jadeMethodSources
+shouldConvertFromString
+{
+shouldConvertFromString() unitTest;
+
+vars
+	settings	: ATLocatorSettings;
+	reader		: ATCommandLineReader;
+	
+begin
+	create reader transient;
+	reader.commandLine	:= "SomeOther=Text skipSchemas=false TestSchemas=AutomatedTestSchema,AutomatedTestSchema_TestInternals" &
+				" annotations=#annotation annotationsAvoid=#avoid1,#avoid2";
+
+	create settings transient;
+	settings.stringParse( reader );
+	
+	assertTrueMsg( "Main schema included", settings.schemas.includes( "AutomatedTestSchema" ));
+	assertTrueMsg( "Test schema included", settings.schemas.includes( "AutomatedTestSchema_TestInternals" ));
+	
+	assertTrueMsg( "Annotation found", settings.annotations.includes( "#annotation" ));
+	assertTrueMsg( "Annotation to avoid found", settings.annotationsAvoid.includes( "#avoid2" ));
+	
+epilog
+	delete reader;
+	delete settings;
+end;
+}
+
+shouldConvertToString
+{
+shouldConvertToString() unitTest;
+
+vars
+	items		: StringArray;
+	settings	: ATLocatorSettings;
+	reader		: ATCommandLineReader;
+	builder		: ATCommandLineBuilder;
+	line		: String;
+	
+begin
+	create settings transient;
+	
+	settings.schemas.add( "AutomatedTestSchema" );
+	settings.schemas.add( "AutomatedTestSchema_TestInternals" );
+
+	settings.annotations.add( "#annotation" );
+	
+	settings.annotationsAvoid.add( "#avoid1" );
+	settings.annotationsAvoid.add( "#avoid2" );
+	
+	create builder transient;
+	line	:= settings.stringBuild(builder);
+
+	create reader transient;
+	reader.commandLine	:= line;
+
+	assertEqualsMsg( "Schemas defined", "AutomatedTestSchema,AutomatedTestSchema_TestInternals", reader.parseValue( ATLocatorSettings.ItemSchemas ));
+	
+epilog
+	delete settings;
+	delete reader;
+	delete builder;
+	delete items;
+end;
+
+}
+
+	)
 	ATLocatorTests (
 	jadeMethodSources
 getUnitTestCountForClass
@@ -1428,17 +1668,17 @@ shouldFindAllFromAllSchemas
 shouldFindAllFromAllSchemas() unitTest;
 
 vars
-	testFinder	: ATLocator;
+	testLocator	: ATLocator;
 		
 begin	
-	create testFinder transient;
+	create testLocator transient;
 	
-	testFinder.addSchema( rootSchema, true );
+	testLocator.addSchema( rootSchema, true );
 	
-	assertTrueMsg( "Should find " & method.name, testFinder.allMethods.includes( method ));
+	assertTrueMsg( "Should find " & method.name, testLocator.unitTests.includes( method ));
 	
 epilog	
-	delete testFinder;
+	delete testLocator;
 end;
 
 }
@@ -1448,17 +1688,37 @@ shouldFindAllFromCurrentSchema
 shouldFindAllFromCurrentSchema() unitTest;
 
 vars
-	testFinder	: ATLocator;
+	testLocator	: ATLocator;
 		
 begin	
-	create testFinder transient;
+	create testLocator transient;
 	
-	testFinder.addSchema( currentSchema, false );
+	testLocator.addSchema( currentSchema, false );
 	
-	assertTrueMsg( "Should find " & method.name, testFinder.allMethods.includes( method ));
+	assertTrueMsg( "Should find " & method.name, testLocator.unitTests.includes( method ));
 
 epilog	
-	delete testFinder;
+	delete testLocator;
+end;
+
+}
+
+shouldFindAllTests
+{
+shouldFindAllTests() unitTest;
+
+vars
+	testLocator	: ATLocator;
+		
+begin	
+	create testLocator transient;
+	testLocator.addAll();
+	
+	assertTrueMsg( "Should find " & method.name, testLocator.unitTests.includes( method ));
+	assertTrueMsg( "Should find at least 30 tests", testLocator.unitTests.size() >= 30 );
+		
+epilog	
+	delete testLocator;
 end;
 
 }
@@ -1468,22 +1728,22 @@ shouldFindClassFromName
 shouldFindClassFromName() unitTest;
 
 vars
-	testFinder	: ATLocator;
+	testLocator	: ATLocator;
 		
 begin	
-	create testFinder transient;
+	create testLocator transient;
 	
-	testFinder.addClassName( currentSchema.name, self.class().name );
+	testLocator.addClassName( currentSchema.name, self.class().name );
 		
-	assertEqualsMsg( "All local methods should be found", getUnitTestCountForClass, testFinder.allMethods.size() );
+	assertEqualsMsg( "All local methods should be found", getUnitTestCountForClass, testLocator.unitTests.size() );
 		
-	assertTrueMsg( "Should find " & method.name, testFinder.allMethods.includes( method ));
+	assertTrueMsg( "Should find " & method.name, testLocator.unitTests.includes( method ));
 	
 	assertFalseMsg( "Shouldnt find " & ATLocatorTests::notAUnitTest.name, 
-			testFinder.allMethods.includes( ATLocatorTests::notAUnitTest ));	
+			testLocator.unitTests.includes( ATLocatorTests::notAUnitTest ));	
 
 epilog	
-	delete testFinder;
+	delete testLocator;
 end;
 }
 
@@ -1492,22 +1752,22 @@ shouldFindFromClass
 shouldFindFromClass() unitTest;
 
 vars
-	testFinder	: ATLocator;
+	testLocator	: ATLocator;
 		
 begin	
-	create testFinder transient;
+	create testLocator transient;
 	
-	testFinder.addClass( ATLocatorTests );
+	testLocator.addClass( ATLocatorTests );
 	
-	assertEqualsMsg( "All local methods should be found", getUnitTestCountForClass, testFinder.allMethods.size() );
+	assertEqualsMsg( "All local methods should be found", getUnitTestCountForClass, testLocator.unitTests.size() );
 	
-	assertTrueMsg( "Should find " & method.name, testFinder.allMethods.includes( method ));
+	assertTrueMsg( "Should find " & method.name, testLocator.unitTests.includes( method ));
 	
 	assertFalseMsg( "Shouldnt find " & ATLocatorTests::notAUnitTest.name, 
-			testFinder.allMethods.includes( ATLocatorTests::notAUnitTest ));	
+			testLocator.unitTests.includes( ATLocatorTests::notAUnitTest ));	
 
 epilog	
-	delete testFinder;
+	delete testLocator;
 end;
 }
 
@@ -1516,17 +1776,17 @@ shouldFindFromClassAndChildren
 shouldFindFromClassAndChildren() unitTest;
 
 vars
-	testFinder	: ATLocator;
+	testLocator	: ATLocator;
 		
 begin	
-	create testFinder transient;
+	create testLocator transient;
 	
-	testFinder.addClasses( ATTests, currentSchema );
+	testLocator.addClasses( currentSchema, ATTests );
 	
-	assertTrueMsg( "Should find " & method.name, testFinder.allMethods.includes( method ));
+	assertTrueMsg( "Should find " & method.name, testLocator.unitTests.includes( method ));
 
 epilog	
-	delete testFinder;
+	delete testLocator;
 end;
 }
 
@@ -1535,17 +1795,17 @@ shouldFindFromSubschemas
 shouldFindFromSubschemas() unitTest;
 
 vars
-	testFinder	: ATLocator;
+	testLocator	: ATLocator;
 		
 begin	
-	create testFinder transient;
+	create testLocator transient;
 	
-	testFinder.addClassesDown( JadeTestCase, currentSchema.superschema );
+	testLocator.addClassesDown( currentSchema.superschema, JadeTestCase );
 	
-	assertTrueMsg( "Should find " & method.name, testFinder.allMethods.includes( method ));
+	assertTrueMsg( "Should find " & method.name, testLocator.unitTests.includes( method ));
 
 epilog	
-	delete testFinder;
+	delete testLocator;
 end;
 }
 
@@ -1554,23 +1814,51 @@ shouldFindMethod
 shouldFindMethod() unitTest;
 
 vars
-	testFinder	: ATLocator;
+	testLocator	: ATLocator;
 		
 begin	
-	create testFinder transient;
+	create testLocator transient;
 	
-	testFinder.addMethod( ATLocatorTests::shouldFindMethod );
-	testFinder.addMethod( ATLocatorTests::shouldFindMethod );
-	testFinder.addMethod( ATLocatorTests::notAUnitTest );
+	testLocator.addMethod( ATLocatorTests::shouldFindMethod );
+	testLocator.addMethod( ATLocatorTests::shouldFindMethod );
+	testLocator.addMethod( ATLocatorTests::notAUnitTest );
 	
 	assertTrueMsg( "Should find " & ATLocatorTests::shouldFindMethod.name, 
-			testFinder.allMethods.includes( ATLocatorTests::shouldFindMethod ));
+			testLocator.unitTests.includes( ATLocatorTests::shouldFindMethod ));
 	
 	assertFalseMsg( "Shouldnt find " & ATLocatorTests::notAUnitTest.name, 
-			testFinder.allMethods.includes( ATLocatorTests::notAUnitTest ));	
+			testLocator.unitTests.includes( ATLocatorTests::notAUnitTest ));	
 			
 epilog	
-	delete testFinder;
+	delete testLocator;
+end;
+
+}
+
+shouldFindMethodGivenSettings
+{
+shouldFindMethodGivenSettings() unitTest;
+
+// #SettingsTest
+
+vars
+	settings : ATLocatorSettings;
+	locator	 : ATLocator;
+	
+begin
+	create settings transient;
+	settings.annotations.add( "#SettingsTest" );
+	settings.schemas.add( currentSchema.name );
+	
+	create locator transient;
+	locator.applySettings( settings );
+	
+	assertTrueMsg( "Only find one unit test", locator.unitTests.size() = 1 );
+	assertTrueMsg( "Only find this unit test", locator.unitTests.includes( ATLocatorTests::shouldFindMethodGivenSettings));
+	
+epilog
+	delete settings;
+	delete locator;
 end;
 
 }
@@ -1582,24 +1870,24 @@ shouldFindMethodWithAnnotation() unitTest;
 // #sampleannotation1
 
 vars
-	testFinder	: ATLocator;
+	testLocator	: ATLocator;
 	annotation	: String;
 	
 begin
 	// arrange
-	create testFinder transient;
+	create testLocator transient;
 	
 	// act
-	testFinder.sourceAnnotations.add( "#dummy" & "annotation" );	// string concat means we wont find this txt in method
-	testFinder.sourceAnnotations.add( "#sample" & "annotation1" );	// string concat means we wont find this txt in method
-	testFinder.addClass( ATLocatorTests );
+	testLocator.annotations.add( "#dummy" & "annotation" );	// string concat means we wont find this txt in method
+	testLocator.annotations.add( "#sample" & "annotation1" );	// string concat means we wont find this txt in method
+	testLocator.addClass( ATLocatorTests );
 	
 	// assert
-	assertEquals( 1, testFinder.allMethods.size());
-	assertTrueMsg( "Found only method that matches criteria", testFinder.allMethods.includes( method ));
+	assertEquals( 1, testLocator.unitTests.size());
+	assertTrueMsg( "Found only method that matches criteria", testLocator.unitTests.includes( method ));
 	
 epilog
-	delete testFinder;
+	delete testLocator;
 end;
 
 
@@ -1610,24 +1898,24 @@ shouldFindMethodWithAnnotationFromClass
 shouldFindMethodWithAnnotationFromClass() unitTest;
 
 vars
-	testFinder	: ATLocator;
+	testLocator	: ATLocator;
 	annotation	: String;
 	
 begin
 	// arrange
-	create testFinder transient;
+	create testLocator transient;
 	
 	// act
-	testFinder.sourceAnnotations.add( "#dummy" & "annotation" );	// string concat means we wont find this txt in method
-	testFinder.sourceAnnotations.add( "#fas" & "t" );				
-	testFinder.addClass( ATLocatorTests );
+	testLocator.annotations.add( "#dummy" & "annotation" );	// string concat means we wont find this txt in method
+	testLocator.annotations.add( "#fas" & "t" );				
+	testLocator.addClass( ATLocatorTests );
 	
 	// assert
-	assertTrueMsg( "Multiple methods should have been found", testFinder.allMethods.size() > 10);
-	assertTrueMsg( "Found this method that matches criteria", testFinder.allMethods.includes( method ));
+	assertTrueMsg( "Multiple methods should have been found", testLocator.unitTests.size() > 10);
+	assertTrueMsg( "Found this method that matches criteria", testLocator.unitTests.includes( method ));
 	
 epilog
-	delete testFinder;
+	delete testLocator;
 end;
 
 
@@ -1638,25 +1926,25 @@ shouldFindMethodsWithPrefix
 shouldFindMethodsWithPrefix() unitTest;
 
 vars
-	testFinder	: ATLocator;
+	testLocator	: ATLocator;
 	prefix		: String;
 	
 begin
 	// arrange
-	create testFinder transient;
+	create testLocator transient;
 	prefix	:= ATLocatorTests::shouldFindMethodsWithPrefix.name;
 	prefix	:= prefix[1:prefix.length()-1];
 	
 	// act
-	testFinder.methodPrefix	:= prefix;
-	testFinder.addClass( ATLocatorTests );
+	testLocator.methodPrefix	:= prefix;
+	testLocator.addClass( ATLocatorTests );
 	
 	// assert
-	assertEquals( 1, testFinder.allMethods.size());
-	assertTrueMsg( "Found only method that matches criteria", testFinder.allMethods.includes( method ));
+	assertEquals( 1, testLocator.unitTests.size());
+	assertTrueMsg( "Found only method that matches criteria", testLocator.unitTests.includes( method ));
 	
 epilog
-	delete testFinder;
+	delete testLocator;
 end;
 
 }
@@ -1666,24 +1954,24 @@ shouldIgnoreMethodWithAnnotation
 shouldIgnoreMethodWithAnnotation() unitTest;
 
 vars
-	testFinder	: ATLocator;
+	testLocator	: ATLocator;
 	annotation	: String;
 	
 	// #sampleannotation2	(ignore as too far down method definition)
 	
 begin
 	// arrange
-	create testFinder transient;
+	create testLocator transient;
 	
 	// act
-	testFinder.sourceAnnotations.add( "#sample" & "annotation2" );	// string concat means we wont find this txt in method
-	testFinder.addClass( ATLocatorTests );
+	testLocator.annotations.add( "#sample" & "annotation2" );	// string concat means we wont find this txt in method
+	testLocator.addClass( ATLocatorTests );
 	
 	// assert
-	assertEquals( 0, testFinder.allMethods.size());
+	assertEquals( 0, testLocator.unitTests.size());
 	
 epilog
-	delete testFinder;
+	delete testLocator;
 end;
 
 
@@ -1696,23 +1984,23 @@ shouldIgnoreMethodWithAnnotationToAvoid() unitTest;
 // #sampleannotation3, #slow
 
 vars
-	testFinder	: ATLocator;
+	testLocator	: ATLocator;
 	annotation	: String;
 		
 begin
 	// arrange
-	create testFinder transient;
+	create testLocator transient;
 	
 	// act
-	testFinder.sourceAnnotations.add( "#sample" & "annotation3" );	// string concat means we wont find this txt in method
-	testFinder.sourceAnnotationsAvoid.add( "#slow" );	// string concat means we wont find this txt in method
-	testFinder.addClass( ATLocatorTests );
+	testLocator.annotations.add( "#sample" & "annotation3" );	// string concat means we wont find this txt in method
+	testLocator.annotationsAvoid.add( "#slow" );	// string concat means we wont find this txt in method
+	testLocator.addClass( ATLocatorTests );
 	
 	// assert
-	assertEquals( 0, testFinder.allMethods.size());
+	assertEquals( 0, testLocator.unitTests.size());
 	
 epilog
-	delete testFinder;
+	delete testLocator;
 end;
 
 
