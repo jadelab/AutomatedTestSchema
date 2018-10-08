@@ -6,10 +6,20 @@ importedPackageDefinitions
 	AutomatedTestPackage is AutomatedTestSchema::AutomatedTestPackage
 	(
 		importedClassDefinitions
+			ATBatch
+			ATBatchResults
+			ATBatchResultsRoot
+			ATBatchResultsSchemaTests
+			ATBatchResultsSchemaTestsDict
+			ATBatchResultsTest
+			ATBatchResultsTestDict
+			ATBatchRunner
+			ATBatchSettings
 			ATBatchWorkerInitialiser
 			ATBuilder
 			ATDatabase
 			ATFixtureMaker
+			ATGarbageCollector
 			ATLocator
 			ATMock
 			ATMockMethod
@@ -23,6 +33,7 @@ importedPackageDefinitions
 			IATFixtureMakerRegistration
 			IATFixtureMakerTarget
 			IATGarbageCollector
+			IATGarbageCollectorOwner
 			IATMockMethod
 			IATRunner
 			IATRunnerTarget
@@ -45,6 +56,33 @@ interfaceDefs
 membershipDefinitions
  
 typeDefinitions
+	AutomatedTestPackage::ATBatch completeDefinition
+	(
+	)
+	AutomatedTestPackage::ATBatchResults completeDefinition
+	(
+	)
+	AutomatedTestPackage::ATBatchResultsRoot completeDefinition
+	(
+	)
+	AutomatedTestPackage::ATBatchResultsSchemaTests completeDefinition
+	(
+	)
+	AutomatedTestPackage::ATBatchResultsSchemaTestsDict completeDefinition
+	(
+	)
+	AutomatedTestPackage::ATBatchResultsTest completeDefinition
+	(
+	)
+	AutomatedTestPackage::ATBatchResultsTestDict completeDefinition
+	(
+	)
+	AutomatedTestPackage::ATBatchRunner completeDefinition
+	(
+	)
+	AutomatedTestPackage::ATBatchSettings completeDefinition
+	(
+	)
 	AutomatedTestPackage::ATBatchWorkerInitialiser completeDefinition
 	(
 	)
@@ -55,6 +93,9 @@ typeDefinitions
 	(
 	)
 	AutomatedTestPackage::ATFixtureMaker completeDefinition
+	(
+	)
+	AutomatedTestPackage::ATGarbageCollector completeDefinition
 	(
 	)
 	AutomatedTestPackage::ATLocator completeDefinition

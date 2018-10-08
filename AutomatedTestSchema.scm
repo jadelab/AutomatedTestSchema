@@ -9,7 +9,7 @@ constantDefinitions
 		ATAssertError:                 Integer = 64000;
 		ATLifetime_Persistent:         Character = 'P';
 		ATLifetime_Transient:          Character = 'T';
-		ATVersion:                     String = "0.1.2";
+		ATVersion:                     String = "0.1.3";
 localeDefinitions
 	5129 "English (New Zealand)" schemaDefaultLocale;
 libraryDefinitions
@@ -27,10 +27,10 @@ typeHeaders
 	ATBatchOutputTargetFactory subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchOutputTargetFile subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchOutputTargetInterpreter subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchResult subclassOf ATBatch abstract, transient; 
-	ATBatchResultsRoot subclassOf ATBatchResult transient; 
-	ATBatchResultsSchemaTests subclassOf ATBatchResult transient; 
-	ATBatchResultsTest subclassOf ATBatchResult transient; 
+	ATBatchResults subclassOf ATBatch abstract, transient; 
+	ATBatchResultsRoot subclassOf ATBatchResults transient, subclassSharedTransientAllowed, subclassTransientAllowed; 
+	ATBatchResultsSchemaTests subclassOf ATBatchResults transient, subclassSharedTransientAllowed, subclassTransientAllowed; 
+	ATBatchResultsTest subclassOf ATBatchResults transient, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	ATBatchRunner subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchRunnerCommand subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchSettings subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
@@ -56,13 +56,14 @@ typeHeaders
 	ATSchemaFileCleaner subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
 	ATVariableCollection subclassOf AutomatedTest abstract; 
 	ATVariableStringArray subclassOf ATVariableCollection transient, transientAllowed, subclassTransientAllowed; 
-	ATXmlBuilder subclassOf AutomatedTest transient; 
+	ATXmlBuilder subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
 	ATAssertException subclassOf NormalException transient, transientAllowed, subclassTransientAllowed; 
 	GAutomatedTestSchema subclassOf RootSchemaGlobal transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	SAutomatedTestSchema subclassOf RootSchemaSession transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	ATBatchResultsSchemaTestsDict subclassOf MemberKeyDictionary duplicatesAllowed, loadFactor = 66, transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	ATBatchResultsTestDict subclassOf MemberKeyDictionary loadFactor = 66, transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	ATChangeTrackerObjectDict subclassOf MemberKeyDictionary loadFactor = 66, transient, transientAllowed, subclassTransientAllowed; 
+	ATGarbageCollectorSet subclassOf ObjectSet loadFactor = 98, transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchResultsRequestArray subclassOf ObjectArray loadFactor = 66, transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	IATBatchOutputFormatArray subclassOf ObjectArray loadFactor = 66, transient, transientAllowed, subclassTransientAllowed; 
 	IATBatchOutputTargetArray subclassOf ObjectArray loadFactor = 66, transient, transientAllowed, subclassTransientAllowed; 
@@ -181,6 +182,13 @@ interfaceDefs
 		result(): Object;
 	)
  
+	IATGarbageCollectorOwner 
+	(
+ 
+	jadeMethodDefinitions
+		getGC(): ATGarbageCollector;
+	)
+ 
 	IATGarbageCollector 
 	(
  
@@ -189,6 +197,7 @@ interfaceDefs
 		clear();
 		purge();
 		remove(object: Object);
+		shareObjectsWith(gcOwner: IATGarbageCollectorOwner);
 	)
  
 	IATMockMethod 
@@ -200,6 +209,12 @@ interfaceDefs
 			errorCode: Integer; 
 			errorDesc: String): IATMockMethod;
 		returns(any: Any): IATMockMethod;
+		returnsMethodValue(
+			receiver: Object; 
+			meth: Method): IATMockMethod;
+		returnsPropertyValue(
+			receiver: Object; 
+			property: Property): IATMockMethod;
 		withSource(source: String): IATMockMethod;
 	)
  
@@ -255,6 +270,7 @@ membershipDefinitions
 	ATBatchResultsSchemaTestsDict of ATBatchResultsSchemaTests ;
 	ATBatchResultsTestDict of ATBatchResultsTest ;
 	ATChangeTrackerObjectDict of ATChangeTrackerObject ;
+	ATGarbageCollectorSet of ATGarbageCollector ;
 	ATBatchResultsRequestArray of ATBatchResultsSchemaTests ;
 	IATBatchOutputFormatArray of IATBatchOutputFormat ;
 	IATBatchOutputTargetArray of IATBatchOutputTarget ;
@@ -420,26 +436,11 @@ typeDefinitions
 	)
 	ATBatchOutputFormatNUnit completeDefinition
 	(
-	attributeDefinitions
-		output:                        String protected; 
-	referenceDefinitions
-		builder:                       ATXmlBuilder  protected; 
  
 	jadeMethodDefinitions
-		create() updating; 
-		delete() updating, protected; 
 		generateString(root: ATBatchResultsRoot): String updating, protected; 
 		getContents(resultsRoot: ATBatchResultsRoot): String updating; 
 		getLabel(resultsRoot: ATBatchResultsRoot): String updating; 
-		xmlAppend(
-			line: String; 
-			padding: Integer) updating, protected; 
-		xmlAppendCDATA(
-			contents: String; 
-			padding: Integer) updating, protected; 
-		xmlAppendLine(
-			line: String; 
-			padding: Integer) updating, protected; 
 	implementInterfaces
 		IATBatchOutputFormat
 		(
@@ -486,7 +487,7 @@ typeDefinitions
 		deliver is deliver;
 		)
 	)
-	ATBatchResult completeDefinition
+	ATBatchResults completeDefinition
 	(
 	attributeDefinitions
 		countAll:                      Integer readonly, virtual; 
@@ -496,9 +497,10 @@ typeDefinitions
 		duration:                      Integer readonly; 
 		durationSecs:                  Decimal[10,3] readonly, virtual; 
 		result:                        String readonly, virtual; 
+		success:                       Boolean readonly, virtual; 
  
 	jadeMethodDefinitions
-		copyResults(from: ATBatchResult) updating; 
+		copyResults(from: ATBatchResults) updating; 
 		countAll(
 			set: Boolean; 
 			_value: Integer io) mapping; 
@@ -508,6 +510,9 @@ typeDefinitions
 		result(
 			set: Boolean; 
 			_value: String io) mapping; 
+		success(
+			set: Boolean; 
+			_value: Boolean io) mapping; 
 		updateAppend(
 			failed: Integer; 
 			passed: Integer; 
@@ -582,6 +587,7 @@ typeDefinitions
 		lastChanged(
 			set: Boolean; 
 			_value: TimeStamp io) mapping; 
+		lastChangedDate(): Date;
 		methodName(
 			set: Boolean; 
 			_value: String io) mapping; 
@@ -610,7 +616,7 @@ typeDefinitions
 		results(
 			set: Boolean; 
 			_value: ATBatchResultsRoot io) mapping; 
-		run() updating; 
+		run(): Boolean updating; 
 		testsFind() protected; 
 		testsOutput() updating, protected; 
 		testsRun() protected; 
@@ -658,8 +664,6 @@ typeDefinitions
 		outputTarget:                  Integer;
 		skipUnsupportedSchemas:        Boolean;
 		workers:                       Integer;
-	referenceDefinitions
-		unitTests:                     MethodColl  implicitMemberInverse, readonly; 
  
 	jadeMethodDefinitions
 		create() updating; 
@@ -1023,17 +1027,26 @@ can have some context eg. current user, current date.`
 	)
 	ATGarbageCollector completeDefinition
 	(
+	attributeDefinitions
+		force:                         Boolean;
 	referenceDefinitions
 		allObjects:                    ObjectSet  implicitMemberInverse, protected; 
-		purger:                        ATPurger  protected; 
+		allSharedGCs:                  ATGarbageCollectorSet   explicitInverse, protected; 
  
 	jadeMethodDefinitions
 		add(object: Object);
 		clear() updating; 
-		create() updating; 
 		delete() updating; 
+		getGC(): ATGarbageCollector protected; 
 		purge() updating; 
+		purgeExceptionHandler(
+			exp: Exception; 
+			errored: Boolean output): Integer protected; 
+		purgeForce() updating, protected; 
+		purgeForceObject(object: Object io) protected; 
 		remove(object: Object);
+		removeMutualObjects() updating, protected; 
+		shareObjectsWith(gcOwner: IATGarbageCollectorOwner);
 	implementInterfaces
 		IATGarbageCollector
 		(
@@ -1041,13 +1054,24 @@ can have some context eg. current user, current date.`
 		clear is clear;
 		purge is purge;
 		remove is remove;
+		shareObjectsWith is shareObjectsWith;
+		)
+		IATGarbageCollectorOwner
+		(
+		getGC is getGC;
 		)
 	)
 	ATLocator completeDefinition
 	(
+	constantDefinitions
+		UnitTestDiscard:               Integer = 0;
+		UnitTestIgnore:                Integer = 32;
+		UnitTestInclude:               Integer = 1;
 	attributeDefinitions
 		annotations:                   StringArray readonly; 
 		annotationsAvoid:              StringArray readonly; 
+		createdEndDate:                Date;
+		createdStartDate:              Date;
 		methodPrefix:                  String[31];
 	referenceDefinitions
 		classes:                       ClassColl  implicitMemberInverse, protected; 
@@ -1072,6 +1096,7 @@ can have some context eg. current user, current date.`
 		addSchemaName(schemaName: String) updating; 
 		applySettings(settings: ATLocatorSettings) updating; 
 		includeMethod(meth: Method): Boolean;
+		includeMethodCreationDate(meth: Method): Boolean protected; 
 		sourceAnnotationExists(
 			meth: Method; 
 			annotation: String): Boolean protected; 
@@ -1106,6 +1131,7 @@ zcode functions from AutomatedTestSchema need to be copied and defined on the im
 		compiled:                      Boolean protected; 
 		suffixMethodCount:             String[11];
 	referenceDefinitions
+		allInstances:                  ObjectArray  implicitMemberInverse, protected; 
 		allMockedMethods:              ObjectArray  implicitMemberInverse, protected; 
 		applicationContext:            ApplicationContext  protected; 
 		gc:                            ATGarbageCollector  protected; 
@@ -1119,7 +1145,7 @@ zcode functions from AutomatedTestSchema need to be copied and defined on the im
 		addReference(
 			name: String; 
 			type: Type): Reference;
-		compile() updating, protected; 
+		compile() updating; 
 		create() updating; 
 		createClassInternal(
 			transientClassParam: Class; 
@@ -1135,7 +1161,9 @@ zcode functions from AutomatedTestSchema need to be copied and defined on the im
 		methodCalled(
 			receiver: Object; 
 			methodReference: JadeMethod): Boolean;
+		methodGet(methodName: String): ATMockMethod protected; 
 		methodOverride(meth: Method): IATMockMethod updating; 
+		methodRemove(methodName: String): Boolean protected; 
 		zcode_createClass(persistentClass: Class): Class updating; 
 	)
 	ATMockMethod completeDefinition
@@ -1180,7 +1208,17 @@ zcode functions from AutomatedTestSchema need to be copied and defined on the im
 		raisesException(
 			errorCode: Integer; 
 			errorDesc: String): IATMockMethod updating; 
+		remove() updating; 
 		returns(any: Any): IATMockMethod updating; 
+		returnsEntityValue(
+			receiver: Object; 
+			methodOrProperty: Feature): IATMockMethod updating, protected; 
+		returnsMethodValue(
+			receiver: Object; 
+			meth: Method): IATMockMethod updating; 
+		returnsPropertyValue(
+			receiver: Object; 
+			property: Property): IATMockMethod updating; 
 		sourceCode(
 			set: Boolean; 
 			_value: String io) updating, mapping; 
@@ -1191,6 +1229,8 @@ zcode functions from AutomatedTestSchema need to be copied and defined on the im
 		doNothing is doNothing;
 		raisesException is raisesException;
 		returns is returns;
+		returnsMethodValue is returnsMethodValue;
+		returnsPropertyValue is returnsPropertyValue;
 		withSource is withSource;
 		)
 	)
@@ -1336,19 +1376,18 @@ Possible Future Enhancements:
 	ATXmlBuilder completeDefinition
 	(
 	attributeDefinitions
+		pad:                           Integer;
 		xml:                           String;
  
 	jadeMethodDefinitions
 		append(
 			line: String; 
-			padding: Integer) updating, protected; 
-		appendCData(
-			contents: String; 
-			padding: Integer) updating, protected; 
-		appendLine(
-			line: String; 
-			padding: Integer) updating, protected; 
+			padding: Integer) updating; 
+		appendCData(contents: String) updating; 
+		appendLine(line: String) updating; 
 		clear() updating; 
+		padDown() updating; 
+		padUp() updating; 
 	)
 	Exception completeDefinition
 	(
@@ -1410,6 +1449,15 @@ Possible Future Enhancements:
 	ATChangeTrackerObjectDict completeDefinition
 	(
 	)
+	Set completeDefinition
+	(
+	)
+	ObjectSet completeDefinition
+	(
+	)
+	ATGarbageCollectorSet completeDefinition
+	(
+	)
 	List completeDefinition
 	(
 	)
@@ -1457,6 +1505,7 @@ memberKeyDefinitions
 	)
  
 inverseDefinitions
+	allSharedGCs of ATGarbageCollector peerOf allSharedGCs of ATGarbageCollector;
 databaseDefinitions
 AutomatedTestSchemaDb
 	(
@@ -1467,27 +1516,91 @@ AutomatedTestSchemaDb
 		SAutomatedTestSchema in "_environ";
 		AutomatedTestSchema in "_usergui";
 		GAutomatedTestSchema in "autotest";
+		ATBatchResultsRoot in "autotest";
 		ATBatchResultsSchemaTests in "autotest";
 		ATBatchResultsTest in "autotest";
-		ATBatchResultsRoot in "autotest";
-		ATAssertException in "autotest";
-		AutomatedTest in "autotest";
-		ATBuilder in "autotest";
-		ATGarbageCollector in "autotest";
-		ATMock in "autotest";
-		ATMockMethod in "autotest";
-		ATPurger in "autotest";
-		ATDatabase in "autotest";
-		ATBatchController in "autotest";
-		ATBatchResult in "autotest";
-		ATXmlBuilder in "autotest";
-		ATBatchOutputTargetInterpreter in "autotest";
 	)
 schemaViewDefinitions
 exportedPackageDefinitions
 	AutomatedTestPackage
 	(
 	exportedClassDefinitions
+	ATBatch transient 
+		(
+		)
+	ATBatchResults transient 
+		(
+		exportedPropertyDefinitions
+			countAll readonly;
+			countFailed readonly;
+			countPassed readonly;
+			countSkipped readonly;
+			duration readonly;
+			durationSecs readonly;
+			result readonly;
+			success readonly;
+		)
+	ATBatchResultsRoot transient 
+		(
+		exportedPropertyDefinitions
+			allSchemaTests readonly;
+			description readonly;
+		exportedMethodDefinitions
+			getDeveloperCount;
+		)
+	ATBatchResultsSchemaTests transient 
+		(
+		exportedPropertyDefinitions
+			allTests readonly;
+			schemaName ;
+		)
+	ATBatchResultsSchemaTestsDict sharedTransientAllowed, transientAllowed, transient 
+		(
+		)
+	ATBatchResultsTest transient 
+		(
+		exportedPropertyDefinitions
+			className readonly;
+			developer ;
+			entityName readonly;
+			errorReason readonly;
+			errorSourceLine readonly;
+			errorStack readonly;
+			lastChanged readonly;
+			methodName readonly;
+			methodReference ;
+			schemaName readonly;
+		)
+	ATBatchResultsTestDict sharedTransientAllowed, transientAllowed, transient 
+		(
+		)
+	ATBatchRunner transientAllowed, transient 
+		(
+		exportedPropertyDefinitions
+			batchSettings ;
+			locator readonly;
+			results readonly;
+		exportedMethodDefinitions
+			run;
+		)
+	ATBatchSettings transientAllowed, transient 
+		(
+		exportedConstantDefinitions
+			OutputFormatBasic;
+			OutputFormatCSV;
+			OutputFormatNUnit;
+			OutputFormatNone;
+			OutputTargetFile;
+			OutputTargetInterpreter;
+			OutputTargetNone;
+		exportedPropertyDefinitions
+			applicationName ;
+			batchSize ;
+			outputFormat ;
+			outputTarget ;
+			skipUnsupportedSchemas ;
+			workers ;
+		)
 	ATBatchWorkerInitialiser transientAllowed, transient 
 		(
 		exportedMethodDefinitions
@@ -1540,18 +1653,33 @@ exportedPackageDefinitions
 			register;
 			result;
 		)
+	ATGarbageCollector transientAllowed, transient 
+		(
+		exportedPropertyDefinitions
+			force ;
+		exportedMethodDefinitions
+			add;
+			clear;
+			purge;
+			remove;
+			shareObjectsWith;
+		)
 	ATLocator transientAllowed, transient 
 		(
 		exportedPropertyDefinitions
 			annotations readonly;
 			annotationsAvoid readonly;
 			methodPrefix ;
+			unitTests readonly;
 		exportedMethodDefinitions
+			addAll;
 			addClass;
 			addClassName;
 			addClasses;
 			addClassesDown;
+			addMethod;
 			addSchema;
+			addSchemaName;
 			includeMethod;
 		)
 	ATMock transientAllowed, transient 
@@ -1577,7 +1705,10 @@ exportedPackageDefinitions
 		exportedMethodDefinitions
 			doNothing;
 			raisesException;
+			remove;
 			returns;
+			returnsMethodValue;
+			returnsPropertyValue;
 			sourceCode;
 		)
 	AutomatedTest transient 
@@ -1592,6 +1723,7 @@ exportedPackageDefinitions
 		IATFixtureMakerRegistration
 		IATFixtureMakerTarget
 		IATGarbageCollector
+		IATGarbageCollectorOwner
 		IATMockMethod
 		IATRunner
 		IATRunnerTarget
@@ -2141,7 +2273,8 @@ begin
 	
 		// check this is actaully a unit test (not bothered about init or finalise)
 		meth	:= methodFinder.findMethodQualified( methodName );
-		if meth.unitTestFlags <> 1 then
+		if meth.unitTestFlags <> ATLocator.UnitTestInclude 
+		and meth.unitTestFlags <> ATLocator.UnitTestIgnore then 
 			return null;
 		endif;
 	
@@ -2376,11 +2509,12 @@ vars
 	lines			: String;
 	
 begin
-	lines	:= "Schema,Test Class,Test Method,Developer,Duration,Passed,Skipped,Failed,Error";
+	lines	:= "Schema,Test Class,Test Method,Developer,Changed,Duration,Passed,Skipped,Failed,Error";
 	
 	if includeSummary then
 		line	:= "All,,," 
 						& root.getDeveloperCount().String & ","
+						& ","
 						& root.duration.String & ","
 						& getIntegerText( root.countPassed ) & ","
 						& getIntegerText( root.countSkipped ) & ","
@@ -2397,6 +2531,7 @@ begin
 						& testResult.className & ","
 						& testResult.methodName & ","
 						& '"' & testResult.developer & '",'
+						& testResult.lastChangedDate.format("dd/MM/yyy" ) & ","
 						& testResult.duration.String & ","
 						& getIntegerText( testResult.countPassed ) & ","
 						& getIntegerText( testResult.countSkipped ) & ","
@@ -2535,30 +2670,6 @@ end;
 	)
 	ATBatchOutputFormatNUnit (
 	jadeMethodSources
-create
-{
-create() updating;
-
-vars
-
-begin
-	create builder transient;
-end;
-
-}
-
-delete
-{
-delete() updating, protected;
-
-vars
-
-begin
-	delete builder;
-end;
-
-}
-
 generateString
 {
 generateString( root : ATBatchResultsRoot )
@@ -2570,13 +2681,15 @@ vars
 	testResult		: ATBatchResultsTest;
 	iterScm			: Iterator;
 	iterTest		: Iterator;
-	padCount		: Integer;
+	builder			: ATXmlBuilder;
 	
 begin
-	xmlAppendLine( '<?xml version="1.0" encoding="UTF-8"?>', padCount );
+	create builder transient;
+
+	builder.appendLine( '<?xml version="1.0" encoding="UTF-8"?>' );
 		
 	// xml testrun
-	xmlAppendLine( '<test-run id="%1" run-date="%2" start-time="%3" total="%4" passed="%5" failed="%6" skipped="%7" time="%8" result="%9">'.atPrint( 
+	builder.appendLine( '<test-run id="%1" run-date="%2" start-time="%3" total="%4" passed="%5" failed="%6" skipped="%7" time="%8" result="%9">'.atPrint( 
 				0,
 				root.startTime.date().format( "yyyy-MM-dd" ),
 				root.startTime.time().format( "HH:mm:ss" ),
@@ -2585,17 +2698,16 @@ begin
 				root.countFailed,
 				root.countSkipped,
 				root.durationSecs,
-				root.result ), 
-				padCount );
+				root.result ));
 				
 	
-	padCount	:= padCount + 1;
+	builder.padUp();
 
 	iterScm	:= root.allSchemaTests.createIterator();
 	while iterScm.next( schemaTests ) do
 	
 		// xml testsuite
-		xmlAppendLine( '<test-suite type="%1" name="%2" result="%3" duration="%4" total="%5" passed="%6" failed="%7" skipped="%8">'.atPrint (
+		builder.appendLine( '<test-suite type="%1" name="%2" result="%3" duration="%4" total="%5" passed="%6" failed="%7" skipped="%8">'.atPrint (
 						"TestSuite",
 						schemaTests.schemaName, 
 						schemaTests.result,
@@ -2603,63 +2715,67 @@ begin
 						schemaTests.countAll,
 						schemaTests.countPassed, 
 						schemaTests.countFailed, 
-						schemaTests.countSkipped ),
-						padCount );
+						schemaTests.countSkipped ));
 
-		padCount	:= padCount + 1;
+		builder.padUp();
 	
 		iterTest	:= schemaTests.allTests.createIterator();
 		while iterTest.next( testResult ) do
 
 			// xml testcase
-			xmlAppend( '<test-case classname="%1" name="%2" fullname="%3" result="%4" duration="%5" asserts="%6">'.atPrint (
+			builder.append( '<test-case classname="%1" name="%2" fullname="%3" result="%4" duration="%5" asserts="%6">'.atPrint (
 						testResult.className,
 						testResult.methodName,
 						testResult.entityName,
 						testResult.result,
 						testResult.durationSecs,
-						testResult.countFailed ),
-						padCount );
+						testResult.countFailed ), builder.pad );
 			
 			if testResult.countFailed > 0 then
 						
-				xmlAppend( CrLf, 0 );
+				builder.append( CrLf, 0 );
 				
-				padCount	:= padCount + 1;
-				xmlAppendLine( '<failure>', padCount );
+				builder.padUp();
+				builder.appendLine( '<failure>' );
 				
-				padCount	:= padCount + 1;
-				xmlAppendLine( '<message>', padCount );
-				xmlAppendCDATA( "Error: " & testResult.errorReason & CrLf & CrLf & "Line: " & testResult.errorSourceLine, padCount + 1 );
-				xmlAppendLine( '</message>', padCount );
+				builder.padUp();
+				builder.appendLine( '<message>' );
+					builder.padUp();
+					builder.appendCData( "Error: " & testResult.errorReason & CrLf & CrLf & "Line: " & testResult.errorSourceLine );
+					builder.padDown();
+				builder.appendLine( '</message>' );
 				
-				xmlAppendLine( '<stack-trace>', padCount );
-				xmlAppendCDATA( testResult.errorStack, padCount + 1 );
-				xmlAppendLine( '</stack-trace>', padCount );
-				padCount	:= padCount - 1;
+				builder.appendLine( '<stack-trace>' );
+					builder.padUp();
+					builder.appendCData( testResult.errorStack );
+					builder.padDown();
+				builder.appendLine( '</stack-trace>' );
+				builder.padDown();
 				
-				xmlAppendLine( '</failure>', padCount );
-				padCount	:= padCount - 1;
+				builder.appendLine( '</failure>' );
+				builder.padDown();
 				
-				xmlAppendLine( '</test-case>', padCount );
+				builder.appendLine( '</test-case>' );
 			else
-				xmlAppendLine( '</test-case>', 0 );		// finish off on the same line for readability
+				builder.append( '</test-case>' & CrLf, 0 );		// finish off on the same line for readability
 			endif;	
 			
 		endwhile;
 	
-		padCount	:= padCount - 1;
+		builder.padDown();
 
-		xmlAppendLine( '</test-suite>', padCount );
+		builder.appendLine( '</test-suite>' );
 	
 		delete iterTest;
 	endwhile;
 								
-	padCount	:= padCount - 1;
-	xmlAppendLine( '</test-run>', padCount);
-	return output;
+	builder.padDown();
+	builder.appendLine( '</test-run>' );
+	
+	return builder.xml;
 	
 epilog
+	delete builder;
 	delete iterScm;
 end;
 
@@ -2693,55 +2809,6 @@ begin
 					" UnitTestResults.xml";
 	
 	return fileTitle;
-end;
-
-}
-
-xmlAppend
-{
-xmlAppend( line		: String;
-		   padding	: Integer ) protected, updating;
-
-vars
-	padText	: String;
-	
-begin
-	if padding > 0 then
-		padText	:= Tab.makeString( padding );
-	endif;
-	output	:= output & padText & line;
-end;
-
-}
-
-xmlAppendCDATA
-{
-xmlAppendCDATA( contents    : String;
-				padding		: Integer) protected, updating;
-
-vars
-	line	: String;
-	
-begin
-	line	:= "<![CDATA[ " & contents & " ]]>";
-	xmlAppendLine( line, padding );
-end;
-
-}
-
-xmlAppendLine
-{
-xmlAppendLine( line		: String;
-			   padding	: Integer ) protected, updating;
-
-vars
-	padText	: String;
-	
-begin
-	if padding > 0 then
-		padText	:= Tab.makeString( padding );
-	endif;
-	output	:= output & padText & line & CrLf;
 end;
 
 }
@@ -2842,11 +2909,11 @@ end;
 }
 
 	)
-	ATBatchResult (
+	ATBatchResults (
 	jadeMethodSources
 copyResults
 {
-copyResults( from : ATBatchResult ) updating;
+copyResults( from : ATBatchResults ) updating;
 
 vars
 
@@ -2906,6 +2973,20 @@ begin
 		else
 			_value	:= "Skipped";
 		endif;
+	endif;
+end;
+
+}
+
+success
+{
+success(set: Boolean; _value: Boolean io) mapping;
+
+vars
+
+begin
+	if set = false then
+		_value	:= countFailed = 0 and countAll > 0;
 	endif;
 end;
 
@@ -3260,10 +3341,26 @@ vars
 begin
 	if set = false then
 		if methodReference = null then
-			return;
-		endif;
-		_value	:= methodReference.getPropertyValue( Method::modifiedTimeStamp.name ).TimeStamp;
+			_value	:= null;
+		else
+			_value	:= methodReference.getPropertyValue( Method::modifiedTimeStamp.name ).TimeStamp;
+			if _value = null then
+				_value	:= methodReference.creationTime();
+			endif;
+		endif;		
 	endif;
+end;
+
+}
+
+lastChangedDate
+{
+lastChangedDate(): Date;
+
+vars
+
+begin
+	return lastChanged.date();
 end;
 
 }
@@ -3395,7 +3492,7 @@ end;
 
 run
 {
-run() updating;
+run() : Boolean updating;
 
 vars
 	
@@ -3410,6 +3507,9 @@ begin
 	
 	// output the tests
 	testsOutput();
+	
+	// return whether successful
+	return results.success;
 end;
 
 }
@@ -4828,11 +4928,7 @@ end;
 allInstances
 {
 allInstances(set: Boolean; _value: Collection io) mapping;
-/*
 
-	CR			Patch		Who		When		Reason
-	=======		=========	===		==========	=============================================
-*/
 vars
 	
 begin
@@ -5316,9 +5412,6 @@ eventMethodTarget( functionName	: String
 							   ): Method protected;
 /*
 	Find the reference to the methid in the user schema, otherwise jade will fallover with 1010/1011s
-
-	CR			Patch		Who		When		Reason
-	=======		=========	===		==========	=============================================
 */
 vars
 	targetClass		: Class;
@@ -5490,18 +5583,6 @@ end;
 
 }
 
-create
-{
-create() updating;
-
-vars
-
-begin
-	create purger transient;
-end;
-
-}
-
 delete
 {
 delete() updating;
@@ -5510,10 +5591,17 @@ vars
 
 begin
 	purge();
-	
-	delete purger;
 end;
 
+}
+
+getGC
+{
+getGC() : ATGarbageCollector protected;
+
+begin
+	return self;
+end;
 }
 
 purge
@@ -5521,16 +5609,106 @@ purge
 purge() updating;
 
 vars
-
+	purgeFailed	: Boolean;
+	
 begin
+	// might not be anything to remove
 	if allObjects.isEmpty() then
 		return;
 	endif;
 	
-	// pass to custom eraser
-	purger.purge( allObjects );
+	// check for shared objects, we'll pass responsibilty for any of those to something else
+	if not allSharedGCs.isEmpty() then
+		removeMutualObjects();
+	endif;
+	
+	// purge all remaining objects
+	if force then
+		on Exception do purgeExceptionHandler( exception, purgeFailed );
+	endif;
+		
+	// purge function skips over objects that have already been deleted
+	allObjects.purge();
+	
+
+	if purgeFailed then
+		// we need to take a harder line on the removals
+		purgeForce();
+	endif;
 end;
 
+}
+
+purgeExceptionHandler
+{
+purgeExceptionHandler( 	exp 	: Exception;
+						errored	: Boolean output
+							   ): Integer protected;
+								
+begin
+	errored	:= true;
+
+	if exp.errorCode.isOneOf( 1048, 1269, 1270 ) then
+		// not handling persistents etc unless it was intended by being in transaction state
+		return Ex_Pass_Back;
+
+	else
+		return Ex_Resume_Next;
+	endif;
+end;
+}
+
+purgeForce
+{
+purgeForce() updating, protected;
+
+vars
+	object			: Object;
+	purgeFailed		: Boolean;
+	
+begin
+	on Exception do purgeExceptionHandler( exception, purgeFailed );
+
+	allObjects.rebuild();
+			
+	// basic delete
+	foreach object in allObjects do
+		if app.isValidObject( object ) then
+			delete object;
+		endif;		
+	endforeach;
+		
+	allObjects.rebuild();
+	
+	// harder delete
+	foreach object in allObjects do
+		if app.isValidObject( object ) then
+			purgeForceObject( object );
+		endif;		
+	endforeach;
+	
+	allObjects.clear();
+end;
+}
+
+purgeForceObject
+{
+purgeForceObject( object : Object io ) protected;
+
+vars
+	userMethodsOff	: Boolean;
+
+begin
+	process._invokeUserMethods( false );	
+	userMethodsOff	:= true;
+	
+	delete object;
+		
+epilog
+	if userMethodsOff then
+		process._invokeUserMethods( true );	
+	endif;
+end;
 }
 
 remove
@@ -5547,6 +5725,46 @@ begin
 	endif;	
 end;
 
+}
+
+removeMutualObjects
+{
+removeMutualObjects() updating, protected;
+
+// removes objects from our cache before we purge the remainder, because other objects still rely on them
+
+vars
+	object	: Object;
+	otherGC	: ATGarbageCollector;
+	
+begin
+	foreach object in allObjects do
+		foreach otherGC in allSharedGCs do
+			if otherGC.allObjects.includes( object ) then
+				allObjects.remove( object );
+				break;
+			endif;
+		endforeach;	
+	endforeach;
+end;
+}
+
+shareObjectsWith
+{
+shareObjectsWith( gcOwner : IATGarbageCollectorOwner );
+
+vars
+	gcOther		: ATGarbageCollector;
+	
+begin
+	app.mustExist( gcOwner, "Associated GC owner" );
+	gcOther		:= gcOwner.getGC();
+	app.mustExist( gcOther, "Associated GC" );
+	
+	if allSharedGCs.includes( gcOther ) = false then
+		allSharedGCs.add( gcOther );
+	endif;	
+end;
 }
 
 	)
@@ -5783,13 +6001,13 @@ vars
 	found		: Boolean;
 	
 begin
-	if meth.unitTestFlags <> 1 then
-		return false;
-	endif;
-	
 	if methodPrefix <> null
 	and meth.name.pos( methodPrefix, 1 ) <> 1 then
 		return false;		
+	endif;
+	
+	if includeMethodCreationDate( meth ) = false then
+		return false;
 	endif;
 	
 	if annotationsAvoid.isEmpty() = false then	
@@ -5811,8 +6029,53 @@ begin
 			return false;
 		endif;
 	endif;
+	
+	if meth.unitTestFlags = UnitTestInclude 
+	or meth.unitTestFlags = UnitTestIgnore then
+		return true;
+	else
+		return false;
+	endif;
+end;
 
-	// all tests passed
+}
+
+includeMethodCreationDate
+{
+includeMethodCreationDate( meth : Method 
+							   ): Boolean protected;
+
+vars
+	methodCreatedDate	: Date;
+	methodModifiedDate	: Date;
+	
+begin
+	if createdStartDate = null
+	and createdEndDate = null then
+		return true;
+	endif;
+	
+	// modified date might be before creation date if deployed from another system
+	methodCreatedDate	:= meth.creationTime().date();
+	methodModifiedDate	:= meth.getPropertyValue( Method::modifiedTimeStamp.name ).TimeStamp.date;
+	if methodModifiedDate <> null 
+	and methodModifiedDate < methodCreatedDate then
+		methodCreatedDate	:= methodModifiedDate;
+	endif;
+	
+	// check
+	if createdStartDate <> null then
+		if methodCreatedDate < createdStartDate then
+			return false;
+		endif;
+	endif;
+	if createdEndDate <> null then
+		if methodCreatedDate > createdEndDate then
+			return false;
+		endif;
+	endif;
+	
+	// all good, in range
 	return true;
 end;
 
@@ -5972,7 +6235,7 @@ end;
 
 compile
 {
-compile() protected, updating;
+compile() updating;
 // compile any methods
 
 vars
@@ -6045,6 +6308,7 @@ begin
 	compile();
 	
 	object	:= invokeMethod( applicationContext, Object::cloneSelfAs, transientClass, true ).Object;
+	allInstances.add( object );
 	return object;
 end;
 
@@ -6143,6 +6407,30 @@ end;
 
 }
 
+methodGet
+{
+methodGet( methodName : String 
+					 ): ATMockMethod protected;
+
+vars
+	iterator	: Iterator;
+	mockMethod	: ATMockMethod;
+	
+begin
+	iterator	:= allMockedMethods.createIterator();
+	while iterator.next( mockMethod ) do
+		if mockMethod.methodName = methodName then
+			return mockMethod;
+		endif;
+	endwhile;
+	
+epilog
+	delete iterator;
+end;
+
+
+}
+
 methodOverride
 {
 methodOverride( meth  : Method )
@@ -6151,14 +6439,22 @@ methodOverride( meth  : Method )
 vars
 	mockMethod	: ATMockMethod;
 	countName	: String;
+	methodName	: String;
 	
 begin
 	app.require( transientClass <> null, "Class must be created before methods can be added" );
+	app.require( meth <> null, "Method parameter must be defined" );
 	app.require( compiled = false, "Method definitions must be inplace before instances are created" );
 	
-	// add a counter for the method
-	countName	:= methodCallCountPropertyName( meth.name );
-	addAttribute( countName, Integer );
+	methodName	:= meth.name;
+	countName	:= methodCallCountPropertyName( methodName );
+	
+	if methodRemove( methodName ) = false then
+		app.require( allInstances.isEmpty(), "Cannot add methods onces instances have been created" );
+	
+		// add a counter for the method
+		addAttribute( countName, Integer );
+	endif;
 
 	// now add the method
 	create mockMethod transient;
@@ -6168,6 +6464,27 @@ begin
 
 	return mockMethod;
 end;
+
+}
+
+methodRemove
+{
+methodRemove( methodName : String 
+						): Boolean protected;
+
+vars
+	mockMethod	: ATMockMethod;
+	
+begin
+	mockMethod	:= methodGet( methodName );
+	if mockMethod <> null then
+		allMockedMethods.remove( mockMethod );
+		mockMethod.remove();
+		delete mockMethod;
+		return true;
+	endif;
+end;
+
 
 }
 
@@ -6416,6 +6733,8 @@ begin
 	app.require( compileAttempted = false, "Cannot call after compilation attempt" );
 
 	methodName		:= meth.name;
+	app.require( methodName <> "create" and methodName <> "delete", "Constructor and destructor functions are not currently supported" );
+		
 	propCountName	:= callCountPropName;
 	myTransClass	:= transClass;
 	myParentMethod	:= meth;
@@ -6467,6 +6786,22 @@ end;
 
 }
 
+remove
+{
+remove() updating;
+
+vars
+
+begin
+	if myTransMethod <> null then
+		process.deleteTransientMethod( myTransMethod );
+	endif;
+	
+	compileAttempted	:= false;
+end;
+
+}
+
 returns
 {
 returns( any : Any 
@@ -6499,6 +6834,75 @@ begin
 	generateReturnValue( returnValue );
 
 	return self;
+end;
+
+}
+
+returnsEntityValue
+{
+returnsEntityValue( receiver 			: Object;
+					methodOrProperty	: Feature
+									   ): IATMockMethod updating, protected;
+
+vars
+	returnValue		: String;
+	
+begin
+	app.require( compileAttempted = false, "No further method changes after compilation attempt" );
+	app.require( myReturnType <> null, "Return type must be defined" );
+	app.require( methodOrProperty <> null, "Method or Property must be defined" );
+	
+	if receiver = null then
+		returnValue	:= "self.";
+	else
+		returnValue	:= '"' & receiver.Object.getOidString() & '".asOid().';
+	endif;
+	
+	if methodOrProperty.isKindOf( Method ) then
+		returnValue	:= returnValue & 'sendMsgWithParams("' & methodOrProperty.name & '").' & myReturnType.name;
+		
+	elseif methodOrProperty.isKindOf( Property ) then
+		returnValue	:= returnValue & 'getPropertyValue("' & methodOrProperty.name & '").' & myReturnType.name;
+		
+	else
+		app.require( methodOrProperty <> null, "Method or Property type not supported" );
+	endif;
+		
+	generateReturnValue( returnValue );
+
+	return self;
+end;
+
+}
+
+returnsMethodValue
+{
+returnsMethodValue( receiver	: Object;
+					meth		: Method
+							   ): IATMockMethod updating;
+
+vars
+	
+begin
+	app.require( meth <> null, "Method must be defined" );
+	
+	return returnsEntityValue( receiver, meth );
+end;
+
+}
+
+returnsPropertyValue
+{
+returnsPropertyValue( receiver	: Object;
+					  property	: Property
+							   ): IATMockMethod updating;
+
+vars
+	
+begin
+	app.require( property <> null, "Property must be defined" );
+	
+	return returnsEntityValue( receiver, property );
 end;
 
 }
@@ -6670,11 +7074,7 @@ findClass
 findClass( 	schemaName	: String;
 			className	: String 
 					   ): Class;
-/*
 
-	CR			Patch		Who		When		Reason
-	=======		=========	===		==========	=============================================
-*/
 vars
 	scm		: Schema;
 	
@@ -7521,7 +7921,7 @@ end;
 append
 {
 append( line	: String;
-		padding	: Integer ) protected, updating;
+		padding	: Integer ) updating;
 
 vars
 	padText	: String;
@@ -7538,30 +7938,28 @@ end;
 
 appendCData
 {
-appendCData( contents    : String;
-			 padding  	 : Integer ) protected, updating;
+appendCData( contents    : String ) updating;
 
 vars
 	line	: String;
 	
 begin
 	line	:= "<![CDATA[ " & contents & " ]]>";
-	appendLine( line, padding );
+	appendLine( line );
 end;
 
 }
 
 appendLine
 {
-appendLine( line	: String;
-			padding	: Integer ) protected, updating;
+appendLine( line	: String ) updating;
 
 vars
 	padText	: String;
 	
 begin
-	if padding > 0 then
-		padText	:= Tab.makeString( padding );
+	if pad > 0 then
+		padText	:= Tab.makeString( pad );
 	endif;
 	xml	:= xml & padText & line & CrLf;
 end;
@@ -7576,6 +7974,31 @@ vars
 
 begin
 	xml		:= "";
+	pad		:= 0;
+end;
+
+}
+
+padDown
+{
+padDown() updating;
+
+vars
+
+begin
+	pad		:= pad - 1;
+end;
+
+}
+
+padUp
+{
+padUp() updating;
+
+vars
+
+begin
+	pad		:= pad + 1;
 end;
 
 }
@@ -7704,6 +8127,7 @@ vars
 	
 begin
 	create runner transient;
+	runner.batchSettings.outputFormat	:= ATBatchSettings.OutputFormatCSV;
 	runner.run();
 end;
 
@@ -8025,6 +8449,19 @@ remove
 remove( object : Object );
 }
 
+shareObjectsWith
+{
+shareObjectsWith( gcOwner : IATGarbageCollectorOwner );
+}
+
+	)
+	IATGarbageCollectorOwner (
+	jadeMethodSources
+getGC
+{
+getGC(): ATGarbageCollector;
+}
+
 	)
 	IATMockMethod (
 	jadeMethodSources
@@ -8043,6 +8480,20 @@ raisesException( errorCode	: Integer;
 returns
 {
 returns( any : Any ): IATMockMethod;
+}
+
+returnsMethodValue
+{
+returnsMethodValue( receiver	: Object;
+					meth		: Method
+							   ): IATMockMethod;
+}
+
+returnsPropertyValue
+{
+returnsPropertyValue( receiver	: Object;
+					  property	: Property
+							   ): IATMockMethod;
 }
 
 withSource

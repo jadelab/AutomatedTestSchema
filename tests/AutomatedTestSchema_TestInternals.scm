@@ -11,8 +11,14 @@ typeHeaders
 	AutomatedTestSchema_TestInternals subclassOf AutomatedTestSchema transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	ATFixtures subclassOf AutomatedTest abstract, transient, subclassTransientAllowed; 
 	ATFixtureMock subclassOf ATFixtures transient, transientAllowed, subclassTransientAllowed; 
+	ATFixtureReference subclassOf ATFixtures transient, transientAllowed, subclassTransientAllowed; 
+	ATTestObject subclassOf ATFixtures transient, transientAllowed, subclassTransientAllowed; 
+	ATTestObjectDelete subclassOf ATFixtures transient, transientAllowed, subclassTransientAllowed; 
 	GAutomatedTestSchema_TestInternals subclassOf GAutomatedTestSchema transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
+	ATTestFixtures subclassOf JadeTestCase abstract, transient; 
+	ATTestFixtureSamples subclassOf ATTestFixtures transient, transientAllowed, subclassTransientAllowed; 
 	ATTests subclassOf JadeTestCase abstract, transient, subclassTransientAllowed; 
+	ATBatchOutputFormatNUnitTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchRunnerTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchSettingsTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
 	ATBuilderTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
@@ -52,6 +58,9 @@ typeDefinitions
 	)
 	ATFixtures completeDefinition
 	(
+ 
+	jadeMethodDefinitions
+		delete() updating; 
 	)
 	ATFixtureMock completeDefinition
 	(
@@ -63,9 +72,27 @@ typeDefinitions
 			param1: String; 
 			param2: Integer) updating; 
 		returnInteger(): Integer;
-		returnObject(): Application updating, protected; 
+		returnObject(): Application updating; 
 		returnSelf(): ATFixtureMock protected; 
 		returnString(): String updating; 
+	)
+	ATFixtureReference completeDefinition
+	(
+	referenceDefinitions
+		myObject:                      Object;
+	)
+	ATTestObject completeDefinition
+	(
+	)
+	ATTestObjectDelete completeDefinition
+	(
+	constantDefinitions
+		ExceptionRaised:               Integer = 4030;
+	attributeDefinitions
+		failOnDelete:                  Boolean;
+ 
+	jadeMethodDefinitions
+		delete() updating; 
 	)
 	Global completeDefinition
 	(
@@ -82,20 +109,50 @@ typeDefinitions
 	JadeTestCase completeDefinition
 	(
 	)
+	ATTestFixtures completeDefinition
+	(
+	)
+	ATTestFixtureSamples completeDefinition
+	(
+	documentationText
+`#DummyTest`
+
+	constantDefinitions
+		UnitTestCount:                 Integer = 6;
+ 
+	jadeMethodDefinitions
+		finalise() unitTestAfterClass; 
+		finaliseMethod() unitTestAfterAll; 
+		initialise() unitTestBeforeClass; 
+		initialiseMethod() unitTestBeforeAll; 
+		notAUnitTestDecoy();
+		testDummyFailure1() unitTest; 
+		testDummyFailure2() unitTest; 
+		testDummyIgnore() unitTestIgnore; 
+		testDummySuccess1() unitTest; 
+		testDummySuccess2() unitTest; 
+		testDummySuccess3() unitTest; 
+	)
 	ATTests completeDefinition
 	(
 	documentationText
-`Put an annotation in for ATTestCaseFinderTests
-#dummy, #fast`
+`Put an annotation in for ATLocatorTests
 
+#dummy, #fast
+`
+
+	)
+	ATBatchOutputFormatNUnitTests completeDefinition
+	(
+ 
+	jadeMethodDefinitions
+		shouldBuildXmlGivenTestResults() unitTest; 
 	)
 	ATBatchRunnerTests completeDefinition
 	(
  
 	jadeMethodDefinitions
-		shouldRunBatchGivenTwoTests() unitTest; 
-		testDummySuccess() protected, unitTest; 
-		testSummaryFailure() protected, unitTest; 
+		shouldRunBatch() unitTest; 
 	)
 	ATBatchSettingsTests completeDefinition
 	(
@@ -159,7 +216,12 @@ typeDefinitions
 	(
  
 	jadeMethodDefinitions
+		shouldFailToDeleteIfPersistent() unitTest; 
+		shouldFailToDeleteOnDestructorError() unitTest; 
+		shouldForceDeleteOnDestructorError() unitTest; 
+		shouldPreserveSharedObject() unitTest; 
 		shouldPurgeObjects() unitTest; 
+		shouldPurgeObjectsGivenOneAlreadyDeleted() unitTest; 
 	)
 	ATLocatorSettingsTests completeDefinition
 	(
@@ -172,7 +234,6 @@ typeDefinitions
 	(
  
 	jadeMethodDefinitions
-		getUnitTestCountForClass(): Integer protected; 
 		notAUnitTest() protected; 
 		shouldFindAllFromAllSchemas() unitTest; 
 		shouldFindAllFromCurrentSchema() unitTest; 
@@ -183,11 +244,14 @@ typeDefinitions
 		shouldFindFromSubschemas() unitTest; 
 		shouldFindMethod() unitTest; 
 		shouldFindMethodGivenSettings() unitTest; 
+		shouldFindMethodInDateRange() unitTest; 
 		shouldFindMethodWithAnnotation() unitTest; 
 		shouldFindMethodWithAnnotationFromClass() unitTest; 
 		shouldFindMethodsWithPrefix() unitTest; 
 		shouldIgnoreMethodWithAnnotation() unitTest; 
 		shouldIgnoreMethodWithAnnotationToAvoid() unitTest; 
+		shouldNotFindMethodAfterEndDate() unitTest; 
+		shouldNotFindMethodBeforeStartDate() unitTest; 
 	)
 	ATMockMethodTests completeDefinition
 	(
@@ -209,6 +273,7 @@ typeDefinitions
 	(
  
 	jadeMethodDefinitions
+		returnsApp(): Object;
 		shouldAddClassReference() unitTest; 
 		shouldAddClassString() unitTest; 
 		shouldCallMethodWithParam() unitTest; 
@@ -220,7 +285,9 @@ typeDefinitions
 		shouldCreateTemporaryClass() unitTest; 
 		shouldCreateTemporaryClasses() unitTest; 
 		shouldDeleteTransientClass() unitTest; 
-		shouldReturnNewValueMethodOverride() unitTest; 
+		shouldReturnMethodValue() unitTest; 
+		shouldReturnObjectGivenSupplied() unitTest; 
+		shouldReturnStringValueGivenSupplied() unitTest; 
 		shouldSetStringValue() unitTest; 
 	)
 	ATSchemaEntityFinderTests completeDefinition
@@ -235,71 +302,33 @@ typeDefinitions
 	constantDefinitions
 		ClassExtract:                  String = 'jadeVersionNumber "16.0.02";
 schemaDefinition
-AutomatedTestSchema subschemaOf RootSchema partialDefinition; 
+AutomatedTestSchema_TestInternals subschemaOf AutomatedTestSchema partialDefinition; 
 typeHeaders
-	ATFixtureMaker subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
+	ATMockMethodTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
  
 membershipDefinitions
  
 typeDefinitions
-	ATFixtureMaker completeDefinition
+	ATMockMethodTests completeDefinition
 	(
-	documentationText
-`Coordinator of a temporary database being populated.
-
-By defining pre-requisites this class will manage execution order and calling of static functions.`
-
-	referenceDefinitions
-		allMethodsExecuted:            ObjectSet  implicitMemberInverse, protected; 
-	documentationText
-`Recorder of all methods executed so we only run once.`
-
-		applicationContext:            ApplicationContext  protected; 
-	documentationText
-`Methods need to be run in the context of the user schema.
-`
-
-		builder:                       ATBuilder;
-		events:                        IATFixtureMakerEvents;
-		lastResult:                    Object  readonly; 
-	documentationText
-`Result object from the last execution.`
-
-		settings:                      Object;
-	documentationText
-`Parameter value of any type to pass through so the fixture functions 
-can have some context eg. current user, current date.`
-
  
 	jadeMethodDefinitions
-		clear() updating; 
-		create() updating; 
-		eventBuilt() updating, protected; 
-		eventCleared() updating, protected; 
-		eventMethodTarget(functionName: String): Method protected; 
-		eventStarted() updating, protected; 
-		execute(mth: Method): Object updating; 
-		executeInternal(mth: Method) updating, protected; 
-		register(
-			currentMethod: JadeMethod; 
-			prerequisiteMethods: ParamListType) updating; 
-		result(): Object;
-	implementInterfaces
-		IATFixtureMaker
-		(
-		clear is clear;
-		execute is execute;
-		result is result;
-		)
-		IATFixtureMakerRegistration
-		(
-		register is register;
-		)
+		doCompile(
+			meth: Method; 
+			source: String) protected; 
+		shouldCompile() unitTest; 
+		shouldGenerateDoNothing() unitTest; 
+		shouldGenerateDoNothingWithReturnValue() unitTest; 
+		shouldGenerateRaiseException() unitTest; 
+		shouldGenerateReturnInteger() unitTest; 
+		shouldGenerateReturnObject() unitTest; 
+		shouldGenerateReturnObjectSelf() unitTest; 
+		shouldGenerateReturnString() unitTest; 
 	)
  
 inverseDefinitions
 databaseDefinitions
-AutomatedTestSchemaDb
+AutomatedTestSchema_TestInternals
 	(
 	databaseFileDefinitions
 		"autotest";
@@ -308,235 +337,240 @@ AutomatedTestSchemaDb
 	)
  
 typeSources
-	ATFixtureMaker (
+	ATMockMethodTests (
 	jadeMethodSources
-clear
+doCompile
 {
-clear() updating;
+doCompile( meth		: Method;
+			   source	: String ) protected;
 
 vars
-	db	: ATDatabase;
+	mock	: ATMock;
+	mockMth	: ATMockMethod;
+	cls		: Class;
+	obj		: Object;
 	
 begin
-	// clear the database
-	if builder <> null then
-		db	:= builder.db;
-	endif;
-	if db <> null then
-		if db.purgeOnDelete then
-			db.purge();
-		else
-			db.clear();
-		endif;
-	endif;
+	// arrange
+	create mock transient;
+	mock.zcode_createClass( ATFixtureMock );
 	
-	// clear the execution list
-	allMethodsExecuted.clear();
-	
-	// notify any listeners the db has been purged
-	eventCleared();
-end;
-
-}
-
-create
-{
-create() updating;
-
-vars
-
-begin
-	applicationContext	:= ApplicationContext.firstProcessTransientInstance();
-end;
-
-}
-
-eventBuilt
-{
-eventBuilt() protected, updating;
-
-vars
-	targetMethod	: Method;
-	
-begin
-	targetMethod	:= eventMethodTarget( IATFixtureMakerEvents::fixtureBuilt.name );
-	if targetMethod <> null then
-		// call the interface function in the peer schema
-		events.Object.invokeMethod( applicationContext, targetMethod );
-	endif;
-end;
-
-}
-
-eventCleared
-{
-eventCleared() protected, updating;
-
-vars
-	targetMethod	: Method;
-	
-begin
-	targetMethod	:= eventMethodTarget( IATFixtureMakerEvents::fixtureCleared.name );
-	if targetMethod <> null then
-		// call the interface function in the peer schema
-		events.Object.invokeMethod( applicationContext, targetMethod );
-	endif;
-end;
-
-}
-
-eventMethodTarget
-{
-eventMethodTarget( functionName	: String 
-							   ): Method protected;
-/*
-	Find the reference to the methid in the user schema, otherwise jade will fallover with 1010/1011s
-
-	CR			Patch		Who		When		Reason
-	=======		=========	===		==========	=============================================
-*/
-vars
-	targetClass		: Class;
-	targetMethod	: Method;
-	
-begin
-	if events = null then
-		return null;
-	endif;
-	
-	targetClass		:= events.Object.class;
-	targetMethod	:= targetClass.getMethodInHTree( functionName );
-	return targetMethod;
-end;
-}
-
-eventStarted
-{
-eventStarted() protected, updating;
-
-vars
-	targetMethod	: Method;
-	
-begin
-	targetMethod	:= eventMethodTarget( IATFixtureMakerEvents::fixtureStarted.name );
-	if targetMethod <> null then
-		// call the interface function in the peer schema
-		events.Object.invokeMethod( applicationContext, targetMethod );
-	endif;
-end;
-
-}
-
-execute
-{
-execute( mth : Method ) 			// method to execute
-			 : Object updating;		// main result value from the last execution
-
-vars
-	localTrans	:  Boolean;
-	
-begin
-	eventStarted();
-
-	if builder <> null 
-	and builder.lifetime = builder.Lifetime_Persistent 
-	and process.isInTransactionState = false then
-		beginTransaction;
-		localTrans	:= true;
-	endif;	
-	
-	executeInternal( mth );
-	
-	if localTrans then
-		commitTransaction;
-		localTrans	:= false;
-	endif;
-	
-	return lastResult;
-	
-epilog
-	if localTrans then
-		abortTransaction;
-	endif;
-
-	eventBuilt();
-end;
-
-}
-
-executeInternal
-{
-executeInternal( mth : Method ) updating, protected; // method to execute
-					 
-vars
-	executeClass		: Class;
-	executeObject		: Object;
-	executeInterface	: IATFixtureMakerTarget;
-	
-begin
-	// guarantee we only run this once
-	if allMethodsExecuted.includes( mth ) then
-		return;
-	endif;
-	allMethodsExecuted.add( mth );
+	mock.methodOverride( meth )
+		.withSource( source );
 		
-	// create and initialise the target object
-	executeClass		:= mth.getSchemaType().Class;
-	create executeObject as executeClass transient;
-	executeInterface	:= executeObject.IATFixtureMakerTarget;
-	executeInterface.initialise( self, builder, settings );
-	
-	// execute the function & record the result
-	executeObject.invokeMethod( applicationContext, mth );
-	lastResult	:= executeInterface.result();
+	obj	:= mock.createTransient();	// create kicks off the compile
 		
 epilog
-	delete executeObject;
+	delete obj;
+	delete mock;
 end;
 
 }
 
-register
+shouldCompile
 {
-register( currentMethod			: JadeMethod;
-		  prerequisiteMethods	: ParamListType ) updating;
+shouldCompile() unitTest;
 
-// calls any pre-requisite functions before the main function is called
-		  
 vars
-	count	   : Integer;
-	inx		   : Integer;
-	meth	 	: Method;
+	source		: String;
 	
 begin
-	// execute any prerequisities
-	count	:= app.getParamListTypeLength( prerequisiteMethods );
-	foreach inx in 1 to count do
-		meth	:= app.getParamListTypeEntry( inx, prerequisiteMethods ).Method;
-		executeInternal( meth );
-	endforeach;
-	
-	// now call the main function (likely called already)
-	executeInternal( currentMethod );
-end;
+	source	:= 
+`returnString() : String updating;
+begin
+	return "some text";
+end;`;
 
+	doCompile( ATFixtureMock::returnString, source );
+end;
 
 }
 
-result
+shouldGenerateDoNothing
 {
-result(): Object;
-// Returns the result of the last execution
-
+shouldGenerateDoNothing() unitTest;
+	
+vars
+	mockMethod	: ATMockMethod;
+	source		: String;
+	
 begin
-	return lastResult;
+	// arrange
+	create mockMethod transient;
+	mockMethod.initialiseMethodOverride( ATFixtureMock, ATFixtureMock::methodDoesNothing, "intValue" );
+	
+	// act
+	mockMethod.doNothing();
+	source	:= mockMethod.sourceCode;
+			
+	// assert
+	doCompile( ATFixtureMock::methodDoesNothing, source );
+	
+epilog
+	delete mockMethod;
+end;
+
+}
+
+shouldGenerateDoNothingWithReturnValue
+{
+shouldGenerateDoNothingWithReturnValue() unitTest;
+	
+vars
+	mockMethod	: ATMockMethod;
+	source		: String;
+	
+begin
+	// arrange
+	create mockMethod transient;
+	mockMethod.initialiseMethodOverride( ATFixtureMock, ATFixtureMock::returnInteger, "retInt" );
+	
+	// act
+	source	:= mockMethod.sourceCode;
+				
+	// assert
+	doCompile( ATFixtureMock::returnInteger, source );
+	
+epilog
+	delete mockMethod;
+end;
+
+}
+
+shouldGenerateRaiseException
+{
+shouldGenerateRaiseException() unitTest;
+
+vars
+	mockMethod	: ATMockMethod;
+	source		: String;	
+		
+begin
+	// arrange
+	create mockMethod transient;
+	mockMethod.initialiseMethodOverride( ATFixtureMock, ATFixtureMock::returnInteger, "" );
+	
+	mockMethod.raisesException( 2000, "Custom Exception" );
+		
+	// act
+	source	:= mockMethod.sourceCode;
+		
+	// assert
+	doCompile( ATFixtureMock::returnInteger, source );
+	
+epilog
+	delete mockMethod;
+end;
+
+}
+
+shouldGenerateReturnInteger
+{
+shouldGenerateReturnInteger() unitTest;
+
+vars
+	mockMethod	: ATMockMethod;
+	source		: String;
+	
+begin
+	// arrange
+	create mockMethod transient;
+	mockMethod.initialiseMethodOverride( ATFixtureMock, ATFixtureMock::returnInteger, null );
+	mockMethod.returns( 10 );
+		
+	// act
+	source	:= mockMethod.sourceCode;
+			
+	// assert
+	doCompile( ATFixtureMock::returnInteger, source );
+	
+epilog
+	delete mockMethod;
+end;
+
+}
+
+shouldGenerateReturnObject
+{
+shouldGenerateReturnObject() unitTest;
+
+vars
+	mockMethod	: ATMockMethod;
+	source		: String;
+	
+begin
+	// arrange
+	create mockMethod transient;
+	mockMethod.initialiseMethodOverride( ATFixtureMock, ATFixtureMock::returnObject, null );
+	mockMethod.returns( app );
+		
+	// act
+	source	:= mockMethod.sourceCode;
+		
+	// assert
+	doCompile( ATFixtureMock::returnObject, source );
+	
+epilog
+	delete mockMethod;
+end;
+
+}
+
+shouldGenerateReturnObjectSelf
+{
+shouldGenerateReturnObjectSelf() unitTest;
+
+vars
+	mockMethod	: ATMockMethod;
+	source		: String;
+	
+begin
+	// arrange
+	create mockMethod transient;
+	mockMethod.initialiseMethodOverride( ATFixtureMock, ATFixtureMock::returnSelf, null );
+	mockMethod.returns( "self" );
+		
+	// act
+	source	:= mockMethod.sourceCode;
+		
+	// assert
+	doCompile( ATFixtureMock::returnSelf, source );
+	
+epilog
+	delete mockMethod;
+end;
+
+}
+
+shouldGenerateReturnString
+{
+shouldGenerateReturnString() unitTest;
+
+vars
+	mockMethod	: ATMockMethod;
+	source		: String;
+	
+begin
+	// arrange
+	create mockMethod transient;
+	mockMethod.initialiseMethodOverride( ATFixtureMock, ATFixtureMock::returnString, null );
+	mockMethod.returns( "some text" );
+		
+	// act
+	source	:= mockMethod.sourceCode;
+		
+	// asserts
+	doCompile( ATFixtureMock::returnString, source );
+
+epilog
+	delete mockMethod;
 end;
 
 }
 
 	)
-' number = 1001;
-		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 2018:09:20:22:57:47.941;
+' number = 1002;
+		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 2018:10:10:00:13:26.031;
  
 	jadeMethodDefinitions
 		shouldRemoveFieldNumber() unitTest, number = 1003;
@@ -546,17 +580,17 @@ end;
 		shouldRemoveInterfaceNumber() unitTest, number = 1009;
 		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 2018:09:24:23:47:55.511;
 		shouldRemoveJCF() unitTest, number = 1007;
-		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 2018:09:24:23:48:02.151;
+		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 2018:10:10:00:12:58.394;
 		shouldRemoveMapNumber() unitTest, number = 1004;
 		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 45 2018:09:20:23:38:38.519;
 		shouldRemovePatchHeader() unitTest, number = 1005;
 		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 45 2018:09:24:20:46:29.532;
 		shouldRemoveSetModifiedTime() unitTest, number = 1001;
-		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 2018:09:24:23:48:09.182;
+		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 2018:10:10:00:13:26.028;
 		shouldRemoveUser() unitTest, number = 1002;
-		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 45 2018:09:20:23:00:28.487;
+		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 2018:10:10:00:13:26.028;
 		shouldReplaceJadeVersion() unitTest, number = 1008;
-		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 45 2018:09:24:21:35:58.594;
+		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 2018:10:10:00:09:19.228;
 	)
 	WebSession completeDefinition
 	(
@@ -587,16 +621,27 @@ AutomatedTestSchema_TestInternals
 		SAutomatedTestSchema_TestInternals in "_environ";
 		AutomatedTestSchema_TestInternals in "_usergui";
 		GAutomatedTestSchema_TestInternals in "autotest";
-		ATTests in "autotest";
-		ATBuilderTests in "autotest";
-		ATDatabaseTests in "autotest";
-		ATGarbageCollectorTests in "autotest";
-		ATMockMethodTests in "autotest";
-		ATMockTests in "autotest";
+		ATFixtureMock in "autotest";
 	)
 schemaViewDefinitions
 exportedPackageDefinitions
 typeSources
+	ATFixtures (
+	jadeMethodSources
+delete
+{
+delete() updating;
+
+// created so it can be overridden via transient methods
+
+vars
+	
+begin
+	
+end;
+}
+
+	)
 	ATFixtureMock (
 	jadeMethodSources
 methodDoesNothing
@@ -649,7 +694,7 @@ end;
 
 returnObject
 {
-returnObject(): Application updating, protected;
+returnObject(): Application updating;
 
 vars
 
@@ -684,13 +729,205 @@ end;
 }
 
 	)
+	ATTestObjectDelete (
+	jadeMethodSources
+delete
+{
+delete() updating;
+
+vars
+	div0	: Real;
+	
+begin
+	if failOnDelete then
+		div0	:= 1/0;
+	endif;
+end;
+}
+
+	)
+	ATTestFixtureSamples (
+	jadeMethodSources
+finalise
+{
+finalise() unitTestAfterClass;
+
+vars
+
+begin
+
+end;
+
+}
+
+finaliseMethod
+{
+finaliseMethod() unitTestAfterAll;
+
+vars
+
+begin
+
+end;
+
+}
+
+initialise
+{
+initialise() unitTestBeforeClass;
+
+vars
+
+begin
+
+end;
+
+}
+
+initialiseMethod
+{
+initialiseMethod() unitTestBeforeAll;
+
+vars
+
+begin
+
+end;
+
+}
+
+notAUnitTestDecoy
+{
+notAUnitTestDecoy();
+
+vars
+
+begin
+
+end;
+
+}
+
+testDummyFailure1
+{
+testDummyFailure1() unitTest;
+
+vars
+
+begin
+	// fail the test only if we are inside another where we want to record a failed count	
+	if app.name = ATAppNameBatchRunner then
+		assertTrue( false );
+	endif;		
+end;
+
+}
+
+testDummyFailure2
+{
+testDummyFailure2() unitTest;
+
+vars
+
+begin
+	// fail the test only if we are inside another where we want to record a failed count	
+	if app.name = ATAppNameBatchRunner then
+		assertTrue( false );
+	endif;		
+end;
+
+}
+
+testDummyIgnore
+{
+testDummyIgnore() unitTestIgnore;
+
+begin
+	assertTrue( true );
+end;
+
+}
+
+testDummySuccess1
+{
+testDummySuccess1() unitTest;
+
+vars
+
+begin
+	assertTrue( true );
+end;
+
+}
+
+testDummySuccess2
+{
+testDummySuccess2() unitTest;
+
+vars
+
+begin
+	process.sleep( 50 );
+	
+	assertTrue( true );
+end;
+
+}
+
+testDummySuccess3
+{
+testDummySuccess3() unitTest;
+
+vars
+
+begin
+	process.sleep( 5 );
+	
+	assertTrue( true );
+end;
+
+}
+
+	)
+	ATBatchOutputFormatNUnitTests (
+	jadeMethodSources
+shouldBuildXmlGivenTestResults
+{
+shouldBuildXmlGivenTestResults() unitTest;
+
+vars
+	runner	: ATBatchRunner;
+	results	: ATBatchResultsRoot;
+	nunit	: ATBatchOutputFormatNUnit;
+	xml		: String;
+	
+begin
+	create runner transient;
+	runner.locator.addClass( ATTestFixtureSamples );
+	runner.batchSettings.outputFormat	:= ATBatchSettings.OutputFormatNUnit;
+	runner.batchSettings.outputTarget	:= ATBatchSettings.OutputTargetNone;
+	runner.run();
+	results	:= runner.controller.results;
+	
+	create nunit transient;
+	xml	:= nunit.getContents( results );
+	
+	assertNotNull( results );
+	assertEqualsMsg( "Passed tests correct", 3, results.countPassed );
+	assertEqualsMsg( "Failed tests correct", 2, results.countFailed );
+	
+epilog
+	delete nunit;
+	delete runner;
+end;
+}
+
+	)
 	ATBatchRunnerTests (
 	jadeMethodSources
-shouldRunBatchGivenTwoTests
+shouldRunBatch
 {
-shouldRunBatchGivenTwoTests() unitTest;
-
-// #IntegrationTest
+shouldRunBatch() unitTest;
 
 vars
 	runner	: ATBatchRunner;
@@ -701,8 +938,7 @@ begin
 	
 	// find two tests defined on this class
 	runner.locatorSettings.annotations.add( "#DummyTest" );
-	runner.locatorSettings.schemas.add( currentSchema.name );
-	runner.locator.applySettings( runner.locatorSettings );
+	runner.locator.addClass( ATTestFixtureSamples );
 	
 	// turn off the output
 	runner.batchSettings.outputFormat	:= ATBatchSettings.OutputFormatCSV;
@@ -713,45 +949,16 @@ begin
 	
 	// checks
 	results	:= runner.controller.results;
+
 	assertNotNull( results );
-	assertEqualsMsg( "One passed test", 1, results.countPassed );
-	assertEqualsMsg( "One failed test", 1, results.countFailed );
+	assertEqualsMsg( "Passed tests correct", 3, results.countPassed );
+	assertEqualsMsg( "Failed tests correct", 2, results.countFailed );
+	assertEqualsMsg( "Ignored tests correct", 1, results.countSkipped );
 	
 epilog
 	delete runner;
 end;
 
-
-}
-
-testDummySuccess
-{
-testDummySuccess() unitTest, protected;
-
-// #DummyTest
-
-vars
-
-begin
-	assertTrue( true );
-end;
-
-}
-
-testSummaryFailure
-{
-testSummaryFailure()  unitTest, protected;
-
-// #DummyTest
-
-vars
-
-begin
-	// fail the test only if we are inside another where we want to record a failed count	
-	if app.name = ATAppNameBatchRunner then
-		assertTrue( false );
-	endif;		
-end;
 
 }
 
@@ -965,11 +1172,11 @@ shouldExceptionIfNullReference() unitTest;
 
 vars
 	builder	: ATBuilder;
-	target	: TcpIpConnection;
+	target	: ATFixtureReference;
 	
 begin
 	create target transient;
-	assertNull( target.userObject );
+	assertNull( target.myObject );
 	
 	create builder transient;
 
@@ -977,8 +1184,8 @@ begin
 	expectedException(ATAssertError);
 	
 	builder.refine(target)
-		.set(TcpIpConnection::userObject, null );
-	assertEquals( self, target.userObject );
+		.set(ATFixtureReference::myObject, null );
+	assertEquals( self, target.myObject );
 		
 epilog
 	delete target;
@@ -1080,24 +1287,24 @@ shouldSetReference() unitTest;
 
 vars
 	builder	: ATBuilder;
-	target	: TcpIpConnection;
+	target	: ATFixtureReference;
 	
 begin
 	create target transient;
-	assertNull( target.userObject );
+	assertNull( target.myObject );
 	
 	create builder transient;
 
 	// set reference
 	builder.refine(target)
-		.set(TcpIpConnection::userObject, self );
-	assertEquals( self, target.userObject );
+		.set(ATFixtureReference::myObject, self );
+	assertEquals( self, target.myObject );
 		
 	// set null reference
-	expectedException(ATAssertError);	// to change once asserts working properly
+	expectedException(ATAssertError);	
 	builder.refine(target)
-		.set(TcpIpConnection::userObject, null );
-	assertEquals( self, target.userObject );
+		.set(ATFixtureReference::myObject, null );
+	assertEquals( self, target.myObject );
 		
 epilog
 	delete target;
@@ -1112,21 +1319,21 @@ shouldSetReferenceToNull()  unitTest;
 
 vars
 	builder	: ATBuilder;
-	target	: TcpIpConnection;
+	target	: ATFixtureReference;
 	
 begin
 	create target transient;
-	assertNull( target.userObject );
+	assertNull( target.myObject );
 	
 	create builder transient;
 	builder.refine(target)
-		.set(TcpIpConnection::userObject, self );
+		.set(ATFixtureReference::myObject, self );
 	
 	// set null reference
 	builder.refine(target)
-		.setNull(TcpIpConnection::userObject );
+		.setNull(ATFixtureReference::myObject );
 	
-	assertNull( target.userObject );
+	assertNull( target.myObject );
 		
 epilog
 	delete target;
@@ -1403,11 +1610,11 @@ vars
 begin
 	create builder transient;
 			
-	inst1	:= builder.make( JadeScript ).result;
-	inst2	:= builder.make( JadeScript ).result;
+	inst1	:= builder.make( ATTestObject ).result;
+	inst2	:= builder.make( ATTestObject ).result;
 	inst3	:= builder.make( StringArray ).result;
 	
-	assertEquals( inst1, builder.db.get( JadeScript, 1 ));
+	assertEquals( inst1, builder.db.get( ATTestObject, 1 ));
 			
 epilog
 	delete builder;
@@ -1456,9 +1663,9 @@ shouldCountObjectsCorrectly() unitTest;
 
 vars
 	repo	: ATDatabase;
-	inst1	: JadeScript;
-	inst2	: JadeScript;
-	inst3	: JadeScript;
+	inst1	: ATTestObject;
+	inst2	: ATTestObject;
+	inst3	: ATTestObject;
 	inst4	: StringArray;
 	
 begin
@@ -1473,7 +1680,7 @@ begin
 	repo.add( inst3 );
 	repo.add( inst4 );
 	
-	assertEquals( 3, repo.classCount( JadeScript ));
+	assertEquals( 3, repo.classCount( ATTestObject ));
 	assertEquals( 1, repo.classCount( StringArray ));
 	assertEquals( 0, repo.classCount( Object ));
 	
@@ -1490,9 +1697,9 @@ shouldPurgeCreatedObjects() unitTest;
 
 vars
 	repo	: ATDatabase;
-	inst1	: JadeScript;
-	inst2	: JadeScript;
-	inst3	: JadeScript;
+	inst1	: ATTestObject;
+	inst2	: ATTestObject;
+	inst3	: ATTestObject;
 	inst4	: StringArray;
 	
 begin
@@ -1506,7 +1713,7 @@ begin
 	repo.add( inst2 );
 	repo.add( inst3 );
 	repo.add( inst4 );
-	assertEquals( inst3, repo.get( JadeScript, 3 ));
+	assertEquals( inst3, repo.get( ATTestObject, 3 ));
 	
 	assertTrue( repo.includes( inst1 ));
 	
@@ -1529,15 +1736,136 @@ end;
 	)
 	ATGarbageCollectorTests (
 	jadeMethodSources
+shouldFailToDeleteIfPersistent
+{
+shouldFailToDeleteIfPersistent() unitTest;
+
+vars
+	test	: Object;
+	gc		: ATGarbageCollector;
+	
+begin
+	test	:= process;
+	
+	create gc transient;
+	gc.add( test );
+	
+	expectedException( 1048 );
+	gc.purge();
+	
+epilog
+	if gc <> null then
+		gc.clear();
+		delete gc;
+	endif;
+end;
+}
+
+shouldFailToDeleteOnDestructorError
+{
+shouldFailToDeleteOnDestructorError() unitTest;
+
+vars
+	test	: ATTestObjectDelete;
+	gc		: ATGarbageCollector;
+	gcForce	: ATGarbageCollector;
+	
+begin
+	create test transient;
+	test.failOnDelete	:= true;
+
+	create gc transient;
+	gc.add( test );
+	
+	expectedException( ATTestObjectDelete.ExceptionRaised );
+	gc.purge();
+	
+	assertNotNullMsg( "Destructor has protected object from being deleted", test );
+	
+epilog
+	if app.isValidObject(test) then
+		test.failOnDelete	:= false;
+	endif;
+	delete gc;
+end;
+}
+
+shouldForceDeleteOnDestructorError
+{
+shouldForceDeleteOnDestructorError() unitTest;
+
+vars
+	test	: ATTestObjectDelete;
+	gc		: ATGarbageCollector;
+	gcForce	: ATGarbageCollector;
+	
+begin
+	create test transient;
+	test.failOnDelete	:= true;
+
+	create gc transient;
+	gc.add( test );
+	
+	gc.force	:= true;
+	gc.purge();
+	
+	assertNotNullMsg( "Destructor has protected object from being deleted", test );
+	
+epilog
+	if app.isValidObject(test) then
+		test.failOnDelete	:= false;
+	endif;
+	delete gc;
+end;
+}
+
+shouldPreserveSharedObject
+{
+shouldPreserveSharedObject() unitTest;
+
+vars
+	gc1			: ATGarbageCollector;
+	gc2			: ATGarbageCollector;
+	shared		: ATTestObject;
+	unshared	: ATTestObject;
+	
+begin
+	create shared transient;
+	create unshared transient;
+
+	create gc1 transient;
+	create gc2 transient;
+	gc1.shareObjectsWith( gc2 );
+	
+	gc1.add( unshared );
+	gc1.add( shared );	
+	gc2.add( shared );
+		
+	gc1.purge();
+	
+	assertFalseMsg( "Unshared object has been deleted", app.isValidObject( unshared ));
+	assertTrueMsg( "Shared object has been preserved", app.isValidObject( shared ));
+	
+	gc2.purge();
+	
+	assertFalseMsg( "Shared object has been deleted", app.isValidObject( shared ));
+			
+epilog
+	delete gc1;
+	delete gc2;
+end;
+
+}
+
 shouldPurgeObjects
 {
 shouldPurgeObjects() unitTest;
 
 vars
 	gc		: ATGarbageCollector;
-	inst1	: JadeScript;
-	inst2	: JadeScript;
-	inst3	: JadeScript;
+	inst1	: ATTestObject;
+	inst2	: ATTestObject;
+	inst3	: ATTestObject;
 	
 begin
 	create gc transient;
@@ -1561,6 +1889,38 @@ begin
 	
 epilog
 	delete inst3;
+	delete gc;
+end;
+
+}
+
+shouldPurgeObjectsGivenOneAlreadyDeleted
+{
+shouldPurgeObjectsGivenOneAlreadyDeleted() unitTest;
+
+vars
+	gc		: ATGarbageCollector;
+	inst1	: ATTestObject;
+	inst2	: ATTestObject;
+	
+begin
+	create gc transient;
+	
+	create inst1 transient;
+	gc.add( inst1 );
+		
+	create inst2 transient;
+	gc.add( inst2 );
+	
+	// manually delete one of the objects in the gc
+	delete inst1;
+	
+	gc.purge();
+	
+	assertFalse( app.isValidObject( inst1 ));
+	assertFalse( app.isValidObject( inst2 ));
+	
+epilog
 	delete gc;
 end;
 
@@ -1639,18 +1999,6 @@ end;
 	)
 	ATLocatorTests (
 	jadeMethodSources
-getUnitTestCountForClass
-{
-getUnitTestCountForClass() : Integer protected;
-
-vars
-
-begin
-	return self.class().getPropertyValue( Class::methods.name ).Collection.size() - 2;
-end;
-
-}
-
 notAUnitTest
 {
 notAUnitTest() protected;
@@ -1729,18 +2077,20 @@ shouldFindClassFromName() unitTest;
 
 vars
 	testLocator	: ATLocator;
+	mth			: JadeMethod;
 		
 begin	
 	create testLocator transient;
 	
-	testLocator.addClassName( currentSchema.name, self.class().name );
-		
-	assertEqualsMsg( "All local methods should be found", getUnitTestCountForClass, testLocator.unitTests.size() );
-		
-	assertTrueMsg( "Should find " & method.name, testLocator.unitTests.includes( method ));
+	testLocator.addClassName( currentSchema.name, ATTestFixtureSamples.name );
 	
-	assertFalseMsg( "Shouldnt find " & ATLocatorTests::notAUnitTest.name, 
-			testLocator.unitTests.includes( ATLocatorTests::notAUnitTest ));	
+	assertEqualsMsg( "All tests should be found", ATTestFixtureSamples.UnitTestCount, testLocator.unitTests.size() );
+	
+	mth	:= ATTestFixtureSamples::testDummyFailure2;
+	assertTrueMsg( "Should find " & mth.name, testLocator.unitTests.includes( mth ));
+	
+	mth	:= ATTestFixtureSamples::notAUnitTestDecoy;
+	assertFalseMsg( "Shouldnt find " & mth.name, testLocator.unitTests.includes( mth ));	
 
 epilog	
 	delete testLocator;
@@ -1753,18 +2103,20 @@ shouldFindFromClass() unitTest;
 
 vars
 	testLocator	: ATLocator;
+	mth			: JadeMethod;
 		
 begin	
 	create testLocator transient;
 	
-	testLocator.addClass( ATLocatorTests );
+	testLocator.addClass( ATTestFixtureSamples );
 	
-	assertEqualsMsg( "All local methods should be found", getUnitTestCountForClass, testLocator.unitTests.size() );
+	assertEqualsMsg( "All tests should be found", ATTestFixtureSamples.UnitTestCount, testLocator.unitTests.size() );
 	
-	assertTrueMsg( "Should find " & method.name, testLocator.unitTests.includes( method ));
+	mth	:= ATTestFixtureSamples::testDummyFailure2;
+	assertTrueMsg( "Should find " & mth.name, testLocator.unitTests.includes( mth ));
 	
-	assertFalseMsg( "Shouldnt find " & ATLocatorTests::notAUnitTest.name, 
-			testLocator.unitTests.includes( ATLocatorTests::notAUnitTest ));	
+	mth	:= ATTestFixtureSamples::notAUnitTestDecoy;
+	assertFalseMsg( "Shouldnt find " & mth.name, testLocator.unitTests.includes( mth ));	
 
 epilog	
 	delete testLocator;
@@ -1815,20 +2167,23 @@ shouldFindMethod() unitTest;
 
 vars
 	testLocator	: ATLocator;
-		
+	mth			: JadeMethod;
+	
 begin	
 	create testLocator transient;
 	
-	testLocator.addMethod( ATLocatorTests::shouldFindMethod );
-	testLocator.addMethod( ATLocatorTests::shouldFindMethod );
-	testLocator.addMethod( ATLocatorTests::notAUnitTest );
+	testLocator.addMethod( ATTestFixtureSamples::testDummySuccess1 );
+	testLocator.addMethod( ATTestFixtureSamples::notAUnitTestDecoy );
+	testLocator.addMethod( ATTestFixtureSamples::testDummyIgnore );
 	
-	assertTrueMsg( "Should find " & ATLocatorTests::shouldFindMethod.name, 
-			testLocator.unitTests.includes( ATLocatorTests::shouldFindMethod ));
+	mth		:= ATTestFixtureSamples::testDummySuccess1;
+	assertTrueMsg( "Should find " & mth.name, testLocator.unitTests.includes( mth ));
 	
-	assertFalseMsg( "Shouldnt find " & ATLocatorTests::notAUnitTest.name, 
-			testLocator.unitTests.includes( ATLocatorTests::notAUnitTest ));	
-			
+	mth		:= ATTestFixtureSamples::notAUnitTestDecoy;
+	assertFalseMsg( "Shouldnt find " & mth.name, testLocator.unitTests.includes( mth ));
+						
+	assertTrueMsg( "Should find 2 methoda", testLocator.unitTests.size() = 2);
+	
 epilog	
 	delete testLocator;
 end;
@@ -1860,6 +2215,33 @@ epilog
 	delete settings;
 	delete locator;
 end;
+
+}
+
+shouldFindMethodInDateRange
+{
+shouldFindMethodInDateRange() unitTest;
+
+vars
+	testLocator	: ATLocator;
+	methodDate	: Date;
+	
+begin
+	methodDate	:= method.creationTime().date();
+
+	// arrange
+	create testLocator transient;
+	testLocator.createdStartDate	:= methodDate;
+	testLocator.createdEndDate		:= methodDate;	
+	testLocator.addClass( ATLocatorTests );
+	
+	// assert
+	assertTrueMsg( "Method is in range", testLocator.unitTests.includes( method ));
+	
+epilog
+	delete testLocator;
+end;
+
 
 }
 
@@ -2002,6 +2384,60 @@ begin
 epilog
 	delete testLocator;
 end;
+
+
+}
+
+shouldNotFindMethodAfterEndDate
+{
+shouldNotFindMethodAfterEndDate() unitTest;
+
+vars
+	testLocator	: ATLocator;
+	methodDate	: Date;
+	
+begin
+	methodDate	:= method.creationTime().date();
+
+	// arrange
+	create testLocator transient;
+	testLocator.createdEndDate	:= methodDate - 1;
+	testLocator.addClass( ATLocatorTests );
+	
+	// assert
+	assertTrueMsg( "Method is after end date", testLocator.unitTests.includes( method ) = false);
+		
+epilog
+	delete testLocator;
+end;
+
+
+
+}
+
+shouldNotFindMethodBeforeStartDate
+{
+shouldNotFindMethodBeforeStartDate() unitTest;
+
+vars
+	testLocator	: ATLocator;
+	methodDate	: Date;
+	
+begin
+	methodDate	:= method.creationTime().date();
+
+	// arrange
+	create testLocator transient;
+	testLocator.createdStartDate	:= methodDate + 1;
+	testLocator.addClass( ATLocatorTests );
+	
+	// assert
+	assertTrueMsg( "Method is before start date", testLocator.unitTests.includes( method ) = false);
+	
+epilog
+	delete testLocator;
+end;
+
 
 
 }
@@ -2241,6 +2677,18 @@ end;
 	)
 	ATMockTests (
 	jadeMethodSources
+returnsApp
+{
+returnsApp() : Object;
+
+vars
+
+begin
+	return app;
+end;
+
+}
+
 shouldAddClassReference
 {
 shouldAddClassReference() unitTest;
@@ -2551,32 +2999,91 @@ end;
 
 }
 
-shouldReturnNewValueMethodOverride
+shouldReturnMethodValue
 {
-shouldReturnNewValueMethodOverride() unitTest;
+shouldReturnMethodValue() unitTest;
 
 vars
 	mock	: ATMock;
-	cls		: Class;
-	objBase	: ATFixtureMock;
 	objMock	: ATFixtureMock;
-	result	: String;
 	
 begin
 	// arrange
 	create mock transient;
 	mock.zcode_createClass( ATFixtureMock );
-	mock.methodOverride( ATFixtureMock::returnString )
-					.returns("new text" );
+	mock.methodOverride( ATFixtureMock::returnObject )
+				.returnsMethodValue( self, ATMockTests::returnsApp );
 	
-	create objBase transient;
 	objMock		:= mock.createTransient().ATFixtureMock;
 
-	assertEquals( "A string", objBase.returnString() );
-	assertEquals( "new text", objMock.returnString() );
+	// checks
+	assertEquals( returnsApp(), objMock.returnObject() );
 		
 epilog
-	delete objBase;
+	delete objMock;
+	delete mock;
+end;
+
+}
+
+shouldReturnObjectGivenSupplied
+{
+shouldReturnObjectGivenSupplied() unitTest;
+
+vars
+	mock	: ATMock;
+	objMock	: ATFixtureMock;
+	ref		: ATFixtureReference;
+	
+begin
+	// arrange
+	create ref transient;
+	
+	create mock transient;
+	mock.zcode_createClass( ATFixtureMock );
+	mock.methodOverride( ATFixtureMock::returnObject )
+			.returnsPropertyValue( ref, ATFixtureReference::myObject );
+	
+	objMock		:= mock.createTransient().ATFixtureMock;
+	
+	// last thing we'll do is set the reference
+	ref.myObject	:= app;
+
+	// tests
+	assertEquals( app, objMock.returnObject() );
+		
+epilog
+	delete objMock;
+	delete mock;
+	delete ref;
+end;
+
+}
+
+shouldReturnStringValueGivenSupplied
+{
+shouldReturnStringValueGivenSupplied() unitTest;
+
+vars
+	mock	: ATMock;
+	objMock	: ATFixtureMock;
+	prop	: Property;
+	
+begin
+	// arrange
+	create mock transient;
+	mock.zcode_createClass( ATFixtureMock );
+	prop	:= mock.addAttribute( "stringValue", String );
+	mock.methodOverride( ATFixtureMock::returnString )
+				.returnsPropertyValue( null, prop );
+	
+	objMock		:= mock.createTransient().ATFixtureMock;
+	objMock.setPropertyValue( prop.name, "random value" );
+	
+	// checks
+	assertEquals( "random value", objMock.returnString() );
+		
+epilog
 	delete objMock;
 	delete mock;
 end;
@@ -2737,7 +3244,7 @@ vars
 	
 begin
 	create cleaner transient;
-	cleaner.contents	:= '/* JADE COMMAND FILE NAME D:\rubbish\WingmanSchema.jcf */
+	cleaner.contents	:= '/* JADE COMMAND FILE NAME D:\SomeSchema.jcf */
 jadeVersionNumber "16.0.02";
 schemaDefinition';
 
@@ -2824,9 +3331,10 @@ vars
 begin
 	create cleaner transient;
 	cleaner.contents	:= ClassExtract;
+	
 	cleaner.clean();
 	
-	assertTrue( cleaner.contents.pos( "beaufoy", 1 ) = 0 );
+	assertTrue( cleaner.contents.pos( "JohnB", 1 ) = 0 );
 	
 epilog
 	delete cleaner;
@@ -2843,7 +3351,8 @@ vars
 	
 begin
 	create cleaner transient;
-	cleaner.contents	:= '/* JADE COMMAND FILE NAME D:\rubbish\WingmanSchema.jcf */
+	cleaner.contents	:= 
+'/* JADE COMMAND FILE NAME D:\SomeSchema.jcf */
 jadeVersionNumber "7.01.02";
 schemaDefinition';
 
