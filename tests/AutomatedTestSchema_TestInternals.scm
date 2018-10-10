@@ -122,9 +122,7 @@ typeDefinitions
  
 	jadeMethodDefinitions
 		finalise() unitTestAfterClass; 
-		finaliseMethod() unitTestAfterAll; 
 		initialise() unitTestBeforeClass; 
-		initialiseMethod() unitTestBeforeAll; 
 		notAUnitTestDecoy();
 		testDummyFailure1() unitTest; 
 		testDummyFailure2() unitTest; 
@@ -190,7 +188,8 @@ typeDefinitions
 	jadeMethodDefinitions
 		shouldDetectCreate() unitTest; 
 		shouldDetectDelete() unitTest; 
-		shouldDetectModification() unitTest; 
+		shouldDetectModificationOfArray() unitTest; 
+		shouldDetectModificationOfObject() unitTest; 
 	)
 	ATCommandLineReaderTests completeDefinition
 	(
@@ -220,6 +219,8 @@ typeDefinitions
 		shouldFailToDeleteOnDestructorError() unitTest; 
 		shouldForceDeleteOnDestructorError() unitTest; 
 		shouldPreserveSharedObject() unitTest; 
+		shouldPurgeCollectionItems() unitTest; 
+		shouldPurgeMultipleObjects() unitTest; 
 		shouldPurgeObjects() unitTest; 
 		shouldPurgeObjectsGivenOneAlreadyDeleted() unitTest; 
 	)
@@ -760,33 +761,9 @@ end;
 
 }
 
-finaliseMethod
-{
-finaliseMethod() unitTestAfterAll;
-
-vars
-
-begin
-
-end;
-
-}
-
 initialise
 {
 initialise() unitTestBeforeClass;
-
-vars
-
-begin
-
-end;
-
-}
-
-initialiseMethod
-{
-initialiseMethod() unitTestBeforeAll;
 
 vars
 
@@ -1395,7 +1372,7 @@ begin
 	else
 		assertTrueMsg( "Change should be a creation", tracker.status = Object_Create_Event);
 	endif;
-		
+	
 epilog
 	delete object;
 	delete snapshot;
@@ -1438,13 +1415,48 @@ end;
 
 }
 
-shouldDetectModification
+shouldDetectModificationOfArray
 {
-shouldDetectModification() unitTest;
+shouldDetectModificationOfArray() unitTest;
 
 vars
 	snapshot	: ATChangeTracker;
-	object		: StringArray;
+	objectCheck	: Object;
+	tracker		: ATChangeTrackerObject;
+	sa			: StringArray;
+	
+begin
+	create sa transient;
+	sa.add( "Existing value" );
+
+	create snapshot transient;
+
+	snapshot.startTracking();
+		sa.add( "New value" );
+	snapshot.stopTracking();
+	
+	assertTrueMsg( "Change should be detected", snapshot.compare());
+	
+	tracker	:= snapshot.trackedObjects[sa];
+	if tracker = null then
+		assertTrueMsg( "Change should be detected for object", sa <> null);
+	else
+		assertTrueMsg( "Change should be a modification", tracker.status = Object_Update_Event);
+	endif;
+	
+epilog
+	delete snapshot;
+	delete sa;
+end;
+
+}
+
+shouldDetectModificationOfObject
+{
+shouldDetectModificationOfObject() unitTest;
+
+vars
+	snapshot	: ATChangeTracker;
 	objectCheck	: Object;
 	tracker		: ATChangeTrackerObject;
 	
@@ -1463,13 +1475,10 @@ begin
 	if tracker = null then
 		assertTrueMsg( "Change should be detected for object", tracker <> null);
 	else
-		assertTrueMsg( "Change should be a mofification", tracker.status = Object_Update_Event);
+		assertTrueMsg( "Change should be a modification", tracker.status = Object_Update_Event);
 	endif;
-	
-//	write snapshot.displayChanges;
 		
 epilog
-	delete object;
 	delete snapshot;
 end;
 
@@ -1853,6 +1862,63 @@ begin
 epilog
 	delete gc1;
 	delete gc2;
+end;
+
+}
+
+shouldPurgeCollectionItems
+{
+shouldPurgeCollectionItems() unitTest;
+
+vars
+	gc		: ATGarbageCollector;
+	coll	: ObjectArray;
+	item1	: ATTestObject;
+	item2	: ATTestObject;
+	
+begin
+	create coll transient;
+	create item1 transient;
+	coll.add( item1 );
+	create item2 transient;
+	coll.add( item2 );
+
+	create gc transient;
+	gc.addCollection( coll );	
+	gc.purge();
+	
+	assertFalse( app.isValidObject( item1 ));
+	assertFalse( app.isValidObject( item2 ));
+	
+epilog
+	delete coll;
+	delete gc;
+end;
+
+}
+
+shouldPurgeMultipleObjects
+{
+shouldPurgeMultipleObjects() unitTest;
+
+vars
+	gc		: ATGarbageCollector;
+	item1	: ATTestObject;
+	item2	: ATTestObject;
+	
+begin
+	create item1 transient;
+	create item2 transient;
+	
+	create gc transient;
+	gc.addItems( item1, item2 );	
+	gc.purge();
+	
+	assertFalse( app.isValidObject( item1 ));
+	assertFalse( app.isValidObject( item2 ));
+	
+epilog
+	delete gc;
 end;
 
 }
