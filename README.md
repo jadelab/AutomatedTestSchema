@@ -1,42 +1,38 @@
 # AutomatedTestSchema
-Components that can assist with the writing and execution of unit and integration tests in [Jade](https://www.jadeworld.com) systems
+Components that can assist with the writing and execution of unit and integration tests in [Jade](https://www.jadeworld.com) systems.
 
 ## Overview
-AutomatedTestSchema is a set of components exposed as a package that can assist with automated testing in Jade Systems.
+AutomatedTestSchema is a set of components exposed as a package that can assist with automated testing in Jade Systems.  
 
-Out of the box unit tests can be written by creating classes and test methods under JadeTestCase in your schema. 
+Jade provides unit testing capability which allows developers to define test classes and functions under JadeTestCase, which for many applications may be all that is needed.  
 
-This schema takes that functionality further by assisting with:
-- Inline [Test double](https://github.com/jadelab/AutomatedTestSchema/wiki/Test-Doubles) creation (mocking)
-- [Text fixture](https://github.com/jadelab/AutomatedTestSchema/wiki/Test-Fixtures) builder for setup of complex data
-- [Data Annotations](https://github.com/jadelab/AutomatedTestSchema/wiki/Annotating-Tests) for marking and filtering of Unit Tests
-- [Advanced searching](https://github.com/jadelab/AutomatedTestSchema/wiki/Test-Locator) to find which Unit tests to run
-- Multi-threaded [batch runner](https://github.com/jadelab/AutomatedTestSchema/wiki/Batch-Runner) with predefined output to csv and Jenkins
+This schema extends this model to help address pain points that can arise from needing to retrospectively add tests to legacy code and/or where environments require hundreds or thousands of tests to be written and maintenance may become an issue.
+
+## Functionality
+All of the following components are available through AutomatedTestPackage, however each has been designed so it can be used independently should only one part be important to you.
+
+| Component | Description |
+| --------- | ----------- |
+| [Test doubles](https://github.com/jadelab/AutomatedTestSchema/wiki/Test-Doubles) | Allows for inline creation of test doubles (mocking) to replace and track function calls which can improve readability and isolation of unit tests.|
+| [Text fixtures](https://github.com/jadelab/AutomatedTestSchema/wiki/Test-Fixtures) | A template to ease the creation, maintenance and removal of complex data that may be needed to perform integration tests.|
+| [Annotating Tests](https://github.com/jadelab/AutomatedTestSchema/wiki/Annotating-Tests) | A pattern for labelling unit tests based on their characteristics (eg. #IntegrationTest, #SlowTest) to help determine when they should run.|
+| [Searching for Tests](https://github.com/jadelab/AutomatedTestSchema/wiki/Test-Locator) | A component to search for what unit tests to run based on criteria such as schema, parent class, user, date created and annotations.|
+| [Batch Runner](https://github.com/jadelab/AutomatedTestSchema/wiki/Batch-Runner) | A multi-threaded runner of unit tests with pre-built output formats into csv or continuous integration friendly files (for direct import into [Jenkins](https://jenkins.io/)).|
 
 ## Installation
-- Load AutomatedTestSchema into your Jade environment
-- Import the AutomatedTestPackage into your highest schema(s)
+Full installation instructions are available [here](https://github.com/jadelab/AutomatedTestSchema/wiki/Installation).
 
-- For mocking, create ATMock::createClass() on the imported class, replacing the body of the method from ATMock::zcode_createClass
-
-- For the batch runner, create app::intialiseAutomatedTestRunner per the following code. Then create a Non-GUI application called AutomatedTestRunner, selecting intialiseAutomatedTestRunner() as the initialize method.
-```
-intialiseAutomatedTestRunner( batchRequest : Object ) updating, protected;
-
-vars
-	runTests	: ATBatchWorkerInitialiser;
-	
-begin
-	create runTests transient;
-	runTests.initialiseWorkerApp( batchRequest );
-end;
-```
 ## Contributing
-Any contribution to this project, be-it coding, testing, documentation or ideas is most welcome. 
+Any contribution to this project, be-it coding, testing, documentation, ideas or highlighting faults is most welcome. 
 
-Developers can contribute to any or all schemas. 
+**Issues:**  
+Please provide detailed instructions on how to recreate - ideally a reproducer script.  
+Information should also be provided on what version you're running (see AutomatedTestSchema Global constant ATVersion).
 
-Until a formal source control tool is available please submit full schema files that have been stripped all environmental content. This can be done by running AutomatedTestSchema::JadeScript::cleanSchemaFiles().
+**Code Contributions:**  
+Please ensure you have the permission of your Employer, and that any code submitted is yours to submit.  
+
+Once your full or partial schema is extracted, run AutomatedTestSchema::JadeScript:cleanSchemaFiles() prior to committing it to your local repo. This will strip out all environmental content making it easier to read and merge. Then submit a 'Pull Request'.
 
 
 
