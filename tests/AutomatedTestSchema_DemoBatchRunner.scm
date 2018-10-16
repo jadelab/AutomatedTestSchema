@@ -17,6 +17,8 @@ importedPackageDefinitions
 			ATBatchSettings
 			ATBatchWorkerInitialiser
 			ATBuilder
+			ATChangeTracker
+			ATChangeTrackerObject
 			ATDatabase
 			ATFixtureMaker
 			ATGarbageCollector
@@ -83,6 +85,12 @@ typeDefinitions
 	(
 	)
 	AutomatedTestPackage::ATBuilder completeDefinition
+	(
+	)
+	AutomatedTestPackage::ATChangeTracker completeDefinition
+	(
+	)
+	AutomatedTestPackage::ATChangeTrackerObject completeDefinition
 	(
 	)
 	AutomatedTestPackage::ATDatabase completeDefinition

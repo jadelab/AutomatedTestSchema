@@ -9,7 +9,7 @@ constantDefinitions
 		ATAssertError:                 Integer = 64000;
 		ATLifetime_Persistent:         Character = 'P';
 		ATLifetime_Transient:          Character = 'T';
-		ATVersion:                     String = "0.1.3";
+		ATVersion:                     String = "0.1.4";
 localeDefinitions
 	5129 "English (New Zealand)" schemaDefaultLocale;
 libraryDefinitions
@@ -63,7 +63,7 @@ typeHeaders
 	ATBatchResultsSchemaTestsDict subclassOf MemberKeyDictionary duplicatesAllowed, loadFactor = 66, transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	ATBatchResultsTestDict subclassOf MemberKeyDictionary loadFactor = 66, transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	ATChangeTrackerObjectDict subclassOf MemberKeyDictionary loadFactor = 66, transient, transientAllowed, subclassTransientAllowed; 
-	ATGarbageCollectorSet subclassOf ObjectSet loadFactor = 98, transient, transientAllowed, subclassTransientAllowed; 
+	IATGarbageCollectorOwnerSet subclassOf Set loadFactor = 66, transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchResultsRequestArray subclassOf ObjectArray loadFactor = 66, transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	IATBatchOutputFormatArray subclassOf ObjectArray loadFactor = 66, transient, transientAllowed, subclassTransientAllowed; 
 	IATBatchOutputTargetArray subclassOf ObjectArray loadFactor = 66, transient, transientAllowed, subclassTransientAllowed; 
@@ -186,7 +186,7 @@ interfaceDefs
 	(
  
 	jadeMethodDefinitions
-		getGC(): ATGarbageCollector;
+		gcContainsItem(object: Object): Boolean;
 	)
  
 	IATGarbageCollector 
@@ -194,6 +194,8 @@ interfaceDefs
  
 	jadeMethodDefinitions
 		add(object: Object);
+		addCollection(items: Collection);
+		addItems(items: ParamListType);
 		clear();
 		purge();
 		remove(object: Object);
@@ -270,7 +272,7 @@ membershipDefinitions
 	ATBatchResultsSchemaTestsDict of ATBatchResultsSchemaTests ;
 	ATBatchResultsTestDict of ATBatchResultsTest ;
 	ATChangeTrackerObjectDict of ATChangeTrackerObject ;
-	ATGarbageCollectorSet of ATGarbageCollector ;
+	IATGarbageCollectorOwnerSet of IATGarbageCollectorOwner ;
 	ATBatchResultsRequestArray of ATBatchResultsSchemaTests ;
 	IATBatchOutputFormatArray of IATBatchOutputFormat ;
 	IATBatchOutputTargetArray of IATBatchOutputTarget ;
@@ -290,7 +292,7 @@ typeDefinitions
  
 	jadeMethodDefinitions
 		initialiseTestRunnerCommandline() updating, protected; 
-		initialiseTestRunnerWorker(batchRequest: Object) updating, protected; 
+		intialiseAutomatedTestRunner(batchRequest: Object) updating, protected; 
 		mustExist(
 			target: Any; 
 			targetName: String);
@@ -802,7 +804,9 @@ If db is replaced by the logic, it means we dont leak the default.`
 	ATChangeTracker completeDefinition
 	(
 	attributeDefinitions
-		includeTransients:             Boolean;
+		changeString:                  String readonly, virtual; 
+		frozen:                        Boolean protected; 
+		propertyTracking:              Boolean;
 	referenceDefinitions
 		classesToIgnore:               ClassColl  implicitMemberInverse, readonly; 
 		classesToTrack:                ClassColl  implicitMemberInverse, readonly; 
@@ -810,10 +814,14 @@ If db is replaced by the logic, it means we dont leak the default.`
 		trackedObjects:                ATChangeTrackerObjectDict  implicitMemberInverse, readonly; 
  
 	jadeMethodDefinitions
+		changeString(
+			set: Boolean; 
+			_value: String io) mapping; 
+		clear() updating; 
 		compare(): Boolean;
 		create() updating; 
 		delete() updating; 
-		displayChanges(): String;
+		displayChanges(): String protected; 
 		getObjects(objects: Collection input) protected; 
 		startTracking() updating; 
 		stopTracking() updating; 
@@ -834,9 +842,27 @@ If db is replaced by the logic, it means we dont leak the default.`
 		compare(): Boolean;
 		create() updating; 
 		delete() updating; 
+		freeze() updating; 
+		readPropertyValue(
+			receiver: Object; 
+			property: Property): Any protected; 
 		recordProperties(objectClass: Class) protected; 
+		recordPropertyValue(
+			receiver: Object; 
+			property: Property): String protected; 
+		recordPropertyValueCollection(
+			property: Property; 
+			collection: Collection): String protected; 
+		recordPropertyValueObject(
+			property: Property; 
+			valueAny: Any): String protected; 
+		recordPropertyValuePrimitive(
+			property: Property; 
+			valueAny: Any): String protected; 
 		recordPropertyValues(values: ATVariableStringArray input) protected; 
-		recordStart(target: Object) updating; 
+		recordStart(
+			target: Object; 
+			deep: Boolean) updating; 
 		recordStop() updating; 
 		statusDescription(
 			set: Boolean; 
@@ -1031,13 +1057,15 @@ can have some context eg. current user, current date.`
 		force:                         Boolean;
 	referenceDefinitions
 		allObjects:                    ObjectSet  implicitMemberInverse, protected; 
-		allSharedGCs:                  ATGarbageCollectorSet   explicitInverse, protected; 
+		allSharedGCOwners:             IATGarbageCollectorOwnerSet  implicitMemberInverse, protected; 
  
 	jadeMethodDefinitions
 		add(object: Object);
+		addCollection(items: Collection) updating; 
+		addItems(items: ParamListType) updating; 
 		clear() updating; 
 		delete() updating; 
-		getGC(): ATGarbageCollector protected; 
+		gcContainsItem(object: Object): Boolean;
 		purge() updating; 
 		purgeExceptionHandler(
 			exp: Exception; 
@@ -1051,6 +1079,8 @@ can have some context eg. current user, current date.`
 		IATGarbageCollector
 		(
 		add is add;
+		addCollection is addCollection;
+		addItems is addItems;
 		clear is clear;
 		purge is purge;
 		remove is remove;
@@ -1058,7 +1088,7 @@ can have some context eg. current user, current date.`
 		)
 		IATGarbageCollectorOwner
 		(
-		getGC is getGC;
+		gcContainsItem is gcContainsItem;
 		)
 	)
 	ATLocator completeDefinition
@@ -1452,10 +1482,7 @@ Possible Future Enhancements:
 	Set completeDefinition
 	(
 	)
-	ObjectSet completeDefinition
-	(
-	)
-	ATGarbageCollectorSet completeDefinition
+	IATGarbageCollectorOwnerSet completeDefinition
 	(
 	)
 	List completeDefinition
@@ -1505,11 +1532,11 @@ memberKeyDefinitions
 	)
  
 inverseDefinitions
-	allSharedGCs of ATGarbageCollector peerOf allSharedGCs of ATGarbageCollector;
 databaseDefinitions
 AutomatedTestSchemaDb
 	(
 	databaseFileDefinitions
+		"auto";
 		"autotest";
 	defaultFileDefinition "autotest";
 	classMapDefinitions
@@ -1519,6 +1546,18 @@ AutomatedTestSchemaDb
 		ATBatchResultsRoot in "autotest";
 		ATBatchResultsSchemaTests in "autotest";
 		ATBatchResultsTest in "autotest";
+		AutomatedTest in "autotest";
+		ATBatchController in "autotest";
+		ATBatchResults in "autotest";
+		ATAssertException in "autotest";
+		ATBuilder in "autotest";
+		ATGarbageCollector in "autotest";
+		ATMock in "autotest";
+		ATMockMethod in "autotest";
+		ATPurger in "autotest";
+		ATDatabase in "autotest";
+		ATXmlBuilder in "autotest";
+		ATBatchOutputTargetInterpreter in "autotest";
 	)
 schemaViewDefinitions
 exportedPackageDefinitions
@@ -1622,6 +1661,28 @@ exportedPackageDefinitions
 			make;
 			refine;
 			result;
+		)
+	ATChangeTracker transientAllowed, transient 
+		(
+		exportedPropertyDefinitions
+			classesToIgnore readonly;
+			classesToTrack readonly;
+			trackedObjects readonly;
+		exportedMethodDefinitions
+			compare;
+			displayChanges;
+			startTracking;
+			stopTracking;
+		)
+	ATChangeTrackerObject transientAllowed, transient 
+		(
+		exportedPropertyDefinitions
+			allProperties readonly;
+			allValuesAfter readonly;
+			allValuesBefore readonly;
+			object ;
+			status ;
+			statusDescription readonly;
 		)
 	ATDatabase transientAllowed, transient 
 		(
@@ -1748,9 +1809,9 @@ end;
 
 }
 
-initialiseTestRunnerWorker
+intialiseAutomatedTestRunner
 {
-initialiseTestRunnerWorker( batchRequest : Object ) updating, protected;
+intialiseAutomatedTestRunner( batchRequest : Object ) updating, protected;
 
 vars
 	runTests	: ATBatchWorkerInitialiser;
@@ -4349,6 +4410,41 @@ end;
 	)
 	ATChangeTracker (
 	jadeMethodSources
+changeString
+{
+changeString(set: Boolean; _value: String io) mapping;
+
+vars
+
+begin
+	if set = false then
+		// get code here
+		if frozen then
+			_value	:= displayChanges();
+		else
+			_value	:= "Compare not available";
+		endif;
+	endif;
+end;
+
+}
+
+clear
+{
+clear() updating;
+
+vars
+
+begin
+	frozen	:= false;
+
+	trackedObjects.purge();
+	
+	objectCollection.clear();
+end;
+
+}
+
 compare
 {
 compare(): Boolean;
@@ -4375,8 +4471,10 @@ begin
 	return trackedObjects.isEmpty() = false;
 	
 epilog
-	purge.purge();
-	delete purge;
+	if purge <> null then
+		purge.purge();
+		delete purge;
+	endif;
 	delete trackList;
 end;
 
@@ -4389,8 +4487,8 @@ create() updating;
 vars
 
 begin
-	includeTransients	:= true;
-	
+	propertyTracking	:= true;
+
 	classesToIgnore.add( AutomatedTest );
 	classesToIgnore.add( JadeTestCase );
 	classesToIgnore.add( JadeTestDialog );
@@ -4413,13 +4511,14 @@ end;
 
 displayChanges
 {
-displayChanges(): String;
+displayChanges(): String protected;
 
 vars
 	tracker		: ATChangeTrackerObject;
 	contents	: String;
 	inx			: Integer;
 	prop		: Property;
+	propName	: String;
 	
 begin
 	foreach tracker in trackedObjects do
@@ -4427,11 +4526,20 @@ begin
 		
 		foreach inx in 1 to tracker.allProperties.size do
 			prop	:= tracker.allProperties[inx].Property;
-			contents	:= contents & Tab & prop.name.padBlanks(35) & "[" & tracker.allValuesBefore.at(inx) & "] to [" & tracker.allValuesAfter.at(inx) & "]" & CrLf;
+			if prop = null then
+				propName	:= "self";
+			else
+				propName	:= prop.name;
+			endif;
+			contents	:= contents & Tab & propName.padBlanks(35) & "[" & tracker.allValuesBefore.at(inx) & "] to [" & tracker.allValuesAfter.at(inx) & "]" & CrLf;
 		endforeach;
-		contents	:= contents & CrLf;
 	endforeach;
-	return contents;
+	
+	if contents = "" then
+		return "No changes";
+	else
+		return contents;
+	endif;
 end;
 
 }
@@ -4472,6 +4580,8 @@ vars
 	tracker	: ATChangeTrackerObject;
 	
 begin
+	clear();
+
 	// get the objects to track
 	objectCollection.clear();
 	getObjects( objectCollection );
@@ -4479,7 +4589,7 @@ begin
 	// take a snapshot
 	foreach object in objectCollection do
 		create tracker transient;
-		tracker.recordStart( object );
+		tracker.recordStart( object, propertyTracking );
 		trackedObjects.add( tracker );
 	endforeach;
 end;
@@ -4494,6 +4604,8 @@ vars
 	tracker	: ATChangeTrackerObject;
 	
 begin
+	app.require( frozen = false, "Tracking already stopped" );
+
 	// get the objects to track
 	objectCollection.clear();
 	getObjects( objectCollection );
@@ -4504,7 +4616,7 @@ begin
 		if tracker = null then
 			create tracker transient;
 			tracker.status		:= Object_Create_Event;
-			tracker.recordStart( object );
+			tracker.recordStart( object, propertyTracking );
 			trackedObjects.add( tracker );
 			
 		else
@@ -4517,7 +4629,11 @@ begin
 		if tracker.status = 0 then
 			tracker.status		:= Object_Delete_Event;
 		endif;
+		
+		tracker.freeze();
 	endforeach;
+	
+	frozen	:= true;
 end;
 }
 
@@ -4528,6 +4644,7 @@ trackingObject(object : Object): Boolean protected;
 vars
 	class	: Class;
 	found	: Boolean;
+	form	: Form;
 	
 begin
 	// class checks
@@ -4549,16 +4666,17 @@ begin
 		endif;
 	endif;
 	
+	// filter out the unit test form (though not yet getting the jadetableelements from it..)
 	if object.isKindOf( Control ) then
-		if object.Control.form.isKindOf( JadeTestDialog ) then
-			return false;
-		endif;
+		form	:= object.Control.form;
 	elseif object.isKindOf( MenuItem ) then
-		if object.MenuItem.form.isKindOf( JadeTestDialog ) then
-			return false;
-		endif;
+		form	:= object.MenuItem.form;
 	endif;
-	
+	if form <> null 
+	and form.isKindOf( JadeTestDialog ) then
+		return false;
+	endif;
+
 	return true;
 end;
 
@@ -4631,6 +4749,61 @@ end;
 
 }
 
+freeze
+{
+freeze() updating;
+
+vars
+	maxSize	: Integer;
+	
+begin	
+	maxSize	:= allProperties.size;
+	
+	if allValuesBefore.size < maxSize then
+		allValuesBefore.atPut( maxSize, "" );
+	endif;
+	
+	if allValuesAfter.size < maxSize then
+		allValuesAfter.atPut( maxSize, "" );
+	endif;
+end;
+}
+
+readPropertyValue
+{
+readPropertyValue( receiver	: Object;
+				   property	: Property 
+						   ): Any protected;
+
+vars
+	valueAny	: Any;
+	value		: String;
+	mappingOff	: Boolean;
+	
+begin
+	if property = null then
+		// this is a collection of which we need the contents of
+		return receiver;
+	endif;
+	
+	// mapping methods need switching off	
+	if property.mappingCount > 0 then
+		process._invokeUserMethods( false );	
+		mappingOff	:= true;
+	endif;
+	
+	valueAny	:= object.getPropertyValue( property.name );
+	
+	if mappingOff then
+		process._invokeUserMethods( true );	
+		mappingOff	:= false;
+
+	endif;
+	
+	return valueAny;
+end;
+}
+
 recordProperties
 {
 recordProperties( objectClass : Class) protected;
@@ -4640,6 +4813,12 @@ vars
 	prop	: Property;
 	
 begin
+	if objectClass.inheritsFrom( Collection ) then
+		// also need to log 'self'
+		allProperties.add( null );	
+	endif;
+
+	// log the properties
 	props	:= objectClass.allProperties();
 	foreach prop in props do
 		if prop.name[1] = "_" 
@@ -4655,6 +4834,88 @@ epilog
 end;
 }
 
+recordPropertyValue
+{
+recordPropertyValue( receiver	: Object;
+					 property	: Property 
+							   ): String protected;
+
+vars
+	valueAny	: Any;
+	valueString	: String;
+		
+begin
+	valueAny	:= readPropertyValue( receiver, property );
+	
+	if property = null then
+		valueString	:= recordPropertyValueCollection( null, valueAny.Collection );
+		
+	elseif property.getType().isKindOf( PrimType ) then
+		valueString	:= recordPropertyValuePrimitive( property, valueAny );
+		
+	elseif property.isExclusiveObject() then
+		valueString	:= recordPropertyValueCollection( property, valueAny.Collection );
+			
+	else
+		valueString	:= recordPropertyValueObject( property, valueAny );
+	
+	endif;
+	
+	return valueString;
+end;
+}
+
+recordPropertyValueCollection
+{
+recordPropertyValueCollection( property  	 : Property;
+							   collection	 : Collection 
+											): String protected;
+
+vars
+	
+begin
+	if collection = null then
+		return "<null>";
+	endif;
+	if collection.isEmpty() then
+		return "<empty>";
+	endif;
+	
+	// need to perform a hash of keys and values, but this will do for now...
+	return "<size=" & collection.size().String & ">";
+end;
+
+}
+
+recordPropertyValueObject
+{
+recordPropertyValueObject( property  : Property;
+						   valueAny	 : Any 
+									): String protected;
+
+vars
+
+begin
+	return valueAny.String;
+end;
+
+
+}
+
+recordPropertyValuePrimitive
+{
+recordPropertyValuePrimitive( property  : Property;
+							  valueAny	: Any 
+									   ): String protected;
+
+vars
+
+begin
+	return valueAny.String[1:1000];
+end;
+
+}
+
 recordPropertyValues
 {
 recordPropertyValues(values : ATVariableStringArray input) protected;
@@ -4662,16 +4923,13 @@ recordPropertyValues(values : ATVariableStringArray input) protected;
 vars
 	iter	: Iterator;
 	prop	: Property;
-	val		: Any;
-	valStr	: String;
+	value	: String;
 	
 begin
 	iter	:= allProperties.createIterator();
 	while iter.next( prop ) do
-		val		:= object.getPropertyValue( prop.name );
-		valStr	:= val.String;
-		
-		values.add( valStr );
+		value	:= recordPropertyValue( object, prop );
+		values.add( value );
 	endwhile;
 	
 epilog
@@ -4682,16 +4940,19 @@ end;
 
 recordStart
 {
-recordStart(target : Object) updating;
+recordStart(target : Object;
+			deep   : Boolean ) updating;
 
 vars
 	
 begin
 	object	:= target;
 
-	recordProperties(target.class);
+	if deep then
+		recordProperties(target.class);
 	
-	recordPropertyValues(allValuesBefore);	
+		recordPropertyValues(allValuesBefore);	
+	endif;
 end;
 
 }
@@ -5571,6 +5832,40 @@ end;
 
 }
 
+addCollection
+{
+addCollection( items : Collection ) updating;
+
+vars
+	item	: Any;
+	
+begin
+	foreach item in items do
+		add( item.Object );
+	endforeach;
+end;
+
+}
+
+addItems
+{
+addItems( items : ParamListType ) updating;
+
+vars
+	count	   : Integer;
+	inx		   : Integer;
+	item	   : Object;
+	
+begin
+	count	:= app.getParamListTypeLength( items );
+	foreach inx in 1 to count do
+		item	:= app.getParamListTypeEntry( inx, items ).Object;
+		add( item );
+	endforeach;
+end;
+
+}
+
 clear
 {
 clear() updating;
@@ -5595,13 +5890,17 @@ end;
 
 }
 
-getGC
+gcContainsItem
 {
-getGC() : ATGarbageCollector protected;
+gcContainsItem( object : Object 
+					  ): Boolean;
+
+vars
 
 begin
-	return self;
+	return object <> null and allObjects.includes( object );
 end;
+
 }
 
 purge
@@ -5618,7 +5917,7 @@ begin
 	endif;
 	
 	// check for shared objects, we'll pass responsibilty for any of those to something else
-	if not allSharedGCs.isEmpty() then
+	if not allSharedGCOwners.isEmpty() then
 		removeMutualObjects();
 	endif;
 	
@@ -5735,17 +6034,26 @@ removeMutualObjects() updating, protected;
 
 vars
 	object	: Object;
-	otherGC	: ATGarbageCollector;
+	gcOwner	: IATGarbageCollectorOwner;
+	errored	: Boolean;
 	
 begin
+	// shared gc may have been removed
+	on Exception do purgeExceptionHandler( exception, errored );
+	
 	foreach object in allObjects do
-		foreach otherGC in allSharedGCs do
-			if otherGC.allObjects.includes( object ) then
+		foreach gcOwner in allSharedGCOwners do
+			if gcOwner.gcContainsItem( object ) then
 				allObjects.remove( object );
 				break;
 			endif;
 		endforeach;	
 	endforeach;
+	
+	if errored then
+		// tidy it up so it performs better next time
+		allSharedGCOwners.rebuild();
+	endif;
 end;
 }
 
@@ -5758,11 +6066,9 @@ vars
 	
 begin
 	app.mustExist( gcOwner, "Associated GC owner" );
-	gcOther		:= gcOwner.getGC();
-	app.mustExist( gcOther, "Associated GC" );
 	
-	if allSharedGCs.includes( gcOther ) = false then
-		allSharedGCs.add( gcOther );
+	if allSharedGCOwners.includes( gcOwner ) = false then
+		allSharedGCOwners.add( gcOwner );
 	endif;	
 end;
 }
@@ -8434,6 +8740,16 @@ add
 add( object : Object );
 }
 
+addCollection
+{
+addCollection( items : Collection );
+}
+
+addItems
+{
+addItems( items : ParamListType );
+}
+
 clear
 {
 clear();
@@ -8457,9 +8773,9 @@ shareObjectsWith( gcOwner : IATGarbageCollectorOwner );
 	)
 	IATGarbageCollectorOwner (
 	jadeMethodSources
-getGC
+gcContainsItem
 {
-getGC(): ATGarbageCollector;
+gcContainsItem( object : Object ): Boolean;
 }
 
 	)
