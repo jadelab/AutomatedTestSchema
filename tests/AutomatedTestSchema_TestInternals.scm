@@ -1836,28 +1836,21 @@ vars
 	gc1			: ATGarbageCollector;
 	gc2			: ATGarbageCollector;
 	shared		: ATTestObject;
-	unshared	: ATTestObject;
 	
 begin
 	create shared transient;
-	create unshared transient;
 
 	create gc1 transient;
 	create gc2 transient;
 	gc1.shareObjectsWith( gc2 );
 	
-	gc1.add( unshared );
-	gc1.add( shared );	
 	gc2.add( shared );
 		
-	gc1.purge();
-	
-	assertFalseMsg( "Unshared object has been deleted", app.isValidObject( unshared ));
+	delete gc2;
 	assertTrueMsg( "Shared object has been preserved", app.isValidObject( shared ));
 	
-	gc2.purge();
-	
-	assertFalseMsg( "Shared object has been deleted", app.isValidObject( shared ));
+	delete gc1;
+	assertFalseMsg( "Shared now removed", app.isValidObject( shared ));
 			
 epilog
 	delete gc1;

@@ -35,7 +35,7 @@ importedPackageDefinitions
 			IATFixtureMakerRegistration
 			IATFixtureMakerTarget
 			IATGarbageCollector
-			IATGarbageCollectorOwner
+			IATGarbageCollectorShared
 			IATMockMethod
 			IATRunner
 			IATRunnerTarget
