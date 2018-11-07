@@ -9,7 +9,7 @@ constantDefinitions
 		ATAssertError:                 Integer = 64000;
 		ATLifetime_Persistent:         Character = 'P';
 		ATLifetime_Transient:          Character = 'T';
-		ATVersion:                     String = "0.1.4";
+		ATVersion:                     String = "0.1.5";
 localeDefinitions
 	5129 "English (New Zealand)" schemaDefaultLocale;
 libraryDefinitions
@@ -63,7 +63,6 @@ typeHeaders
 	ATBatchResultsSchemaTestsDict subclassOf MemberKeyDictionary duplicatesAllowed, loadFactor = 66, transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	ATBatchResultsTestDict subclassOf MemberKeyDictionary loadFactor = 66, transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	ATChangeTrackerObjectDict subclassOf MemberKeyDictionary loadFactor = 66, transient, transientAllowed, subclassTransientAllowed; 
-	IATGarbageCollectorOwnerSet subclassOf Set loadFactor = 66, transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchResultsRequestArray subclassOf ObjectArray loadFactor = 66, transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	IATBatchOutputFormatArray subclassOf ObjectArray loadFactor = 66, transient, transientAllowed, subclassTransientAllowed; 
 	IATBatchOutputTargetArray subclassOf ObjectArray loadFactor = 66, transient, transientAllowed, subclassTransientAllowed; 
@@ -182,13 +181,6 @@ interfaceDefs
 		result(): Object;
 	)
  
-	IATGarbageCollectorOwner 
-	(
- 
-	jadeMethodDefinitions
-		gcContainsItem(object: Object): Boolean;
-	)
- 
 	IATGarbageCollector 
 	(
  
@@ -199,7 +191,14 @@ interfaceDefs
 		clear();
 		purge();
 		remove(object: Object);
-		shareObjectsWith(gcOwner: IATGarbageCollectorOwner);
+	)
+ 
+	IATGarbageCollectorShared 
+	(
+ 
+	jadeMethodDefinitions
+		gcGet(): IATGarbageCollector;
+		gcShare(otherGCOwner: IATGarbageCollectorShared);
 	)
  
 	IATMockMethod 
@@ -272,7 +271,6 @@ membershipDefinitions
 	ATBatchResultsSchemaTestsDict of ATBatchResultsSchemaTests ;
 	ATBatchResultsTestDict of ATBatchResultsTest ;
 	ATChangeTrackerObjectDict of ATChangeTrackerObject ;
-	IATGarbageCollectorOwnerSet of IATGarbageCollectorOwner ;
 	ATBatchResultsRequestArray of ATBatchResultsSchemaTests ;
 	IATBatchOutputFormatArray of IATBatchOutputFormat ;
 	IATBatchOutputTargetArray of IATBatchOutputTarget ;
@@ -1057,7 +1055,7 @@ can have some context eg. current user, current date.`
 		force:                         Boolean;
 	referenceDefinitions
 		allObjects:                    ObjectSet  implicitMemberInverse, protected; 
-		allSharedGCOwners:             IATGarbageCollectorOwnerSet  implicitMemberInverse, protected; 
+		allSharedGCs:                  ObjectSet   explicitInverse, protected; 
  
 	jadeMethodDefinitions
 		add(object: Object);
@@ -1065,7 +1063,9 @@ can have some context eg. current user, current date.`
 		addItems(items: ParamListType) updating; 
 		clear() updating; 
 		delete() updating; 
-		gcContainsItem(object: Object): Boolean;
+		gcGet(): IATGarbageCollector;
+		gcShare(otherGCOwner: IATGarbageCollectorShared) updating, protected; 
+		includes(object: Object): Boolean;
 		purge() updating; 
 		purgeExceptionHandler(
 			exp: Exception; 
@@ -1073,8 +1073,8 @@ can have some context eg. current user, current date.`
 		purgeForce() updating, protected; 
 		purgeForceObject(object: Object io) protected; 
 		remove(object: Object);
-		removeMutualObjects() updating, protected; 
-		shareObjectsWith(gcOwner: IATGarbageCollectorOwner);
+		shareObjectsWith(otherGCOwner: IATGarbageCollectorShared) updating; 
+		transferToSharedGCs() updating, protected; 
 	implementInterfaces
 		IATGarbageCollector
 		(
@@ -1084,11 +1084,11 @@ can have some context eg. current user, current date.`
 		clear is clear;
 		purge is purge;
 		remove is remove;
-		shareObjectsWith is shareObjectsWith;
 		)
-		IATGarbageCollectorOwner
+		IATGarbageCollectorShared
 		(
-		gcContainsItem is gcContainsItem;
+		gcGet is gcGet;
+		gcShare is gcShare;
 		)
 	)
 	ATLocator completeDefinition
@@ -1479,12 +1479,6 @@ Possible Future Enhancements:
 	ATChangeTrackerObjectDict completeDefinition
 	(
 	)
-	Set completeDefinition
-	(
-	)
-	IATGarbageCollectorOwnerSet completeDefinition
-	(
-	)
 	List completeDefinition
 	(
 	)
@@ -1532,6 +1526,7 @@ memberKeyDefinitions
 	)
  
 inverseDefinitions
+	allSharedGCs of ATGarbageCollector peerOf allSharedGCs of ATGarbageCollector;
 databaseDefinitions
 AutomatedTestSchemaDb
 	(
@@ -1723,7 +1718,6 @@ exportedPackageDefinitions
 			clear;
 			purge;
 			remove;
-			shareObjectsWith;
 		)
 	ATLocator transientAllowed, transient 
 		(
@@ -1784,7 +1778,7 @@ exportedPackageDefinitions
 		IATFixtureMakerRegistration
 		IATFixtureMakerTarget
 		IATGarbageCollector
-		IATGarbageCollectorOwner
+		IATGarbageCollectorShared
 		IATMockMethod
 		IATRunner
 		IATRunnerTarget
@@ -5886,14 +5880,50 @@ vars
 
 begin
 	purge();
+	
+	// best we clear this out to avoid any recursive calls
+	allSharedGCs.clear();
 end;
 
 }
 
-gcContainsItem
+gcGet
 {
-gcContainsItem( object : Object 
-					  ): Boolean;
+gcGet(): IATGarbageCollector;
+
+vars
+
+begin
+	return self;
+end;
+
+}
+
+gcShare
+{
+gcShare( otherGCOwner : IATGarbageCollectorShared ) updating, protected;
+
+vars
+	otherGC	: Object;
+	
+begin
+	if otherGCOwner <> null then
+		otherGC	:= otherGCOwner.gcGet().Object;
+		
+		if otherGC <> null and otherGC <> self then
+			if allSharedGCs.includes( otherGC ) = false then
+				allSharedGCs.add( otherGC );
+			endif;
+		endif;
+	endif;
+end;
+
+}
+
+includes
+{
+includes( object : Object 
+				): Boolean;
 
 vars
 
@@ -5916,9 +5946,12 @@ begin
 		return;
 	endif;
 	
-	// check for shared objects, we'll pass responsibilty for any of those to something else
-	if not allSharedGCOwners.isEmpty() then
-		removeMutualObjects();
+	// check for shared objects, because if these exist then we cant purge these objects yet
+	if not allSharedGCs.isEmpty() then
+		transferToSharedGCs();
+		
+		allObjects.clear();
+		return;
 	endif;
 	
 	// purge all remaining objects
@@ -6026,50 +6059,29 @@ end;
 
 }
 
-removeMutualObjects
-{
-removeMutualObjects() updating, protected;
-
-// removes objects from our cache before we purge the remainder, because other objects still rely on them
-
-vars
-	object	: Object;
-	gcOwner	: IATGarbageCollectorOwner;
-	errored	: Boolean;
-	
-begin
-	// shared gc may have been removed
-	on Exception do purgeExceptionHandler( exception, errored );
-	
-	foreach object in allObjects do
-		foreach gcOwner in allSharedGCOwners do
-			if gcOwner.gcContainsItem( object ) then
-				allObjects.remove( object );
-				break;
-			endif;
-		endforeach;	
-	endforeach;
-	
-	if errored then
-		// tidy it up so it performs better next time
-		allSharedGCOwners.rebuild();
-	endif;
-end;
-}
-
 shareObjectsWith
 {
-shareObjectsWith( gcOwner : IATGarbageCollectorOwner );
+shareObjectsWith( otherGCOwner : IATGarbageCollectorShared ) updating;
 
 vars
-	gcOther		: ATGarbageCollector;
+
+begin
+	gcShare( otherGCOwner );
+end;
+
+}
+
+transferToSharedGCs
+{
+transferToSharedGCs() updating, protected;
+
+vars
+	gcObject	: Object;
 	
 begin
-	app.mustExist( gcOwner, "Associated GC owner" );
-	
-	if allSharedGCOwners.includes( gcOwner ) = false then
-		allSharedGCOwners.add( gcOwner );
-	endif;	
+	foreach gcObject in allSharedGCs do
+		gcObject.IATGarbageCollector.addCollection( allObjects );
+	endforeach;
 end;
 }
 
@@ -8765,17 +8777,17 @@ remove
 remove( object : Object );
 }
 
-shareObjectsWith
+	)
+	IATGarbageCollectorShared (
+	jadeMethodSources
+gcGet
 {
-shareObjectsWith( gcOwner : IATGarbageCollectorOwner );
+gcGet(): IATGarbageCollector;
 }
 
-	)
-	IATGarbageCollectorOwner (
-	jadeMethodSources
-gcContainsItem
+gcShare
 {
-gcContainsItem( object : Object ): Boolean;
+gcShare( otherGCOwner : IATGarbageCollectorShared );
 }
 
 	)
