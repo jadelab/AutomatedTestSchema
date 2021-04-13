@@ -9,7 +9,7 @@ constantDefinitions
 		ATAssertError:                 Integer = 64000;
 		ATLifetime_Persistent:         Character = 'P';
 		ATLifetime_Transient:          Character = 'T';
-		ATVersion:                     String = "0.1.5";
+		ATVersion:                     String = "0.1.6";
 localeDefinitions
 	5129 "English (New Zealand)" schemaDefaultLocale;
 libraryDefinitions
@@ -325,6 +325,9 @@ typeDefinitions
 		delete() updating; 
 		execute() updating; 
 		requestApplicationAvailable() protected; 
+		requestApplicationSchema(
+			schemaName: String; 
+			appName: String): String protected; 
 		requestApplicationStart(request: ATBatchResultsSchemaTests input) protected; 
 		requestApplicationStartException(
 			exp: Exception; 
@@ -1445,6 +1448,7 @@ Possible Future Enhancements:
 		runBatchForCurrentSchemaTreeToCSV() protected; 
 		runBatchForDataSchemaToJenkins() protected; 
 		runBatchForEnvironment() protected; 
+		runBatchForEnvironmentToFile() protected; 
 	)
 	JadeTestCase completeDefinition
 	(
@@ -1797,6 +1801,8 @@ begin
 	create batchRunnerCommand transient;
 	batchRunnerCommand.execute();
 	
+	terminate;
+	
 epilog
 	delete batchRunnerCommand;
 end;
@@ -2039,19 +2045,43 @@ end;
 
 }
 
+requestApplicationSchema
+{
+requestApplicationSchema(schemaName	: String;
+						 appName	: String ): String protected;
+
+vars
+	schema	: Schema;
+		
+begin
+	schema	:= rootSchema.getSchema( schemaName );
+	while schema <> rootSchema do
+		if schema.getPropertyValue(Schema::_applications.name).AppNameDict.getAtKey( appName) <> null then
+			return schema.name;
+		endif;
+		schema	:= schema.superschema;
+	endwhile;
+	
+	// schema name not found, allow exception
+	return schemaName;
+end;
+}
+
 requestApplicationStart
 {
 requestApplicationStart(request	: ATBatchResultsSchemaTests input) protected;
 
 vars
 	appStarter	: ATBatchWorkerInitialiser;
+	schemaName	: String;
 	
 begin
 	on Exception do requestApplicationStartException(exception, request );
 	
 	if settings.workers > 0 then
 		// we're using other apps
-		app.startApplicationWithParameter( request.schemaName, settings.applicationName, request );
+		schemaName	:= requestApplicationSchema( request.schemaName, settings.applicationName );
+		app.startApplicationWithParameter( schemaName, settings.applicationName, request );
 	
 	else
 		// run in the same thread
@@ -2074,7 +2104,9 @@ requestApplicationStartException( exp 		: Exception;
 vars
 
 begin
-	if exp.errorCode = 1214 then
+	if exp.errorCode = 1214 
+	or exp.errorCode = 1090 and exp.errorItem = Application::startJadeAppWithParameter.name then
+	
 		// application hasnt been defined, no good, but just mark as skipped
 		write "ERROR: " & request.schemaName & " needs the " & 
 					settings.applicationName & " application defined in it or a superschema";		
@@ -3638,6 +3670,7 @@ begin
 	gc.add( reader.Object );
 	
 	create runner transient;
+	runner.batchSettings.outputTarget	:= runner.batchSettings.OutputTargetFile;
 	gc.add( runner );
 	
 	create output transient;
@@ -7531,7 +7564,7 @@ vars
 begin
 	endPos		:= contents.pos( CrLf, 1 );
 	startPos	:= contents.pos( "JADE COMMAND FILE NAME", 1 );
-	
+
 	if startPos > 0 and startPos < endPos then
 		removeLine(startPos);	
 	endif;
@@ -8425,9 +8458,8 @@ vars
 	
 begin
 	create runner transient;
+	runner.batchSettings.workers	:= 1;
 	runner.locator.annotations.add( "#IntegrationTest" );
-	runner.locator.addSchemaName( "AutomatedTestSchema_TestInternals" );
-	
 	runner.batchSettings.outputFormat	:= ATBatchSettings.OutputFormatNUnit;
 	runner.batchSettings.outputTarget	:= ATBatchSettings.OutputTargetFile;
 		
@@ -8446,6 +8478,24 @@ vars
 begin
 	create runner transient;
 	runner.batchSettings.outputFormat	:= ATBatchSettings.OutputFormatCSV;
+	runner.run();
+end;
+
+}
+
+runBatchForEnvironmentToFile
+{
+runBatchForEnvironmentToFile() protected;
+
+vars
+	runner	: ATBatchRunner;
+	
+begin
+	create runner transient;
+	runner.batchSettings.workers		:= 0;
+	runner.batchSettings.outputFormat	:= ATBatchSettings.OutputFormatNUnit;
+	runner.batchSettings.outputTarget	:= ATBatchSettings.OutputTargetFile;
+		
 	runner.run();
 end;
 

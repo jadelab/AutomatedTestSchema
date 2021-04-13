@@ -34,7 +34,6 @@ typeHeaders
 	ATSchemaFileCleanerTests subclassOf ATTests transient, transientAllowed, subclassTransientAllowed; 
 	SAutomatedTestSchema_TestInternals subclassOf SAutomatedTestSchema transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
  
-interfaceDefs
 membershipDefinitions
  
 typeDefinitions
@@ -570,53 +569,38 @@ end;
 }
 
 	)
-' number = 1002;
-		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 2018:10:10:00:13:26.031;
+';
  
 	jadeMethodDefinitions
-		shouldRemoveFieldNumber() unitTest, number = 1003;
-		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 45 2018:09:24:20:46:40.997;
-		shouldRemoveFieldNumberFromString() unitTest, number = 1006;
-		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 2018:09:24:23:47:50.088;
-		shouldRemoveInterfaceNumber() unitTest, number = 1009;
-		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 2018:09:24:23:47:55.511;
-		shouldRemoveJCF() unitTest, number = 1007;
-		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 2018:10:10:00:12:58.394;
-		shouldRemoveMapNumber() unitTest, number = 1004;
-		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 45 2018:09:20:23:38:38.519;
-		shouldRemovePatchHeader() unitTest, number = 1005;
-		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 45 2018:09:24:20:46:29.532;
-		shouldRemoveSetModifiedTime() unitTest, number = 1001;
-		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 2018:10:10:00:13:26.028;
-		shouldRemoveUser() unitTest, number = 1002;
-		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 2018:10:10:00:13:26.028;
-		shouldReplaceJadeVersion() unitTest, number = 1008;
-		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 2018:10:10:00:09:19.228;
+		shouldRemoveFieldNumber() unitTest; 
+		shouldRemoveFieldNumberFromString() unitTest; 
+		shouldRemoveInterfaceNumber() unitTest; 
+		shouldRemoveJCF() unitTest; 
+		shouldRemoveMapNumber() unitTest; 
+		shouldRemovePatchHeader() unitTest; 
+		shouldRemoveSetModifiedTime() unitTest; 
+		shouldRemoveUser() unitTest; 
+		shouldReplaceJadeVersion() unitTest; 
 	)
 	WebSession completeDefinition
 	(
 	)
 	RootSchemaSession completeDefinition
 	(
-		setModifiedTimeStamp "<unknown>" "6.1.00" 20031119 2003:12:01:13:54:02.270;
 	)
 	SAutomatedTestSchema completeDefinition
 	(
-		setModifiedTimeStamp "JOHNB" "16.0.01" 2018:08:29:23:10:00;
 	)
 	SAutomatedTestSchema_TestInternals completeDefinition
 	(
-		setModifiedTimeStamp "jbeaufoy_2" "16.0.02" 2018:09:24:22:21:24.272;
 	)
  
 inverseDefinitions
 databaseDefinitions
-AutomatedTestSchema_TestInternals
+AutomatedTestSchema_TestInternalsDb
 	(
-		setModifiedTimeStamp "JOHNB" "7.1.06" 2018:08:29:23:10:00;
 	databaseFileDefinitions
-		"autotest" number=73;
-		setModifiedTimeStamp "JOHNB" "7.1.06" 2018:08:29:23:10:00;
+		"autotest";
 	defaultFileDefinition "autotest";
 	classMapDefinitions
 		SAutomatedTestSchema_TestInternals in "_environ";
@@ -905,6 +889,8 @@ end;
 shouldRunBatch
 {
 shouldRunBatch() unitTest;
+
+// #IntegrationTest
 
 vars
 	runner	: ATBatchRunner;
@@ -3303,8 +3289,8 @@ vars
 	
 begin
 	create cleaner transient;
-	cleaner.contents	:= '/* JADE COMMAND FILE NAME D:\SomeSchema.jcf */
-jadeVersionNumber "16.0.02";
+	cleaner.contents	:= '/* JADE COMMAND FILE NAME D:\SomeSchema.jcf */"' & CrLf & '
+	jadeVersionNumber "16.0.02";
 schemaDefinition';
 
 	cleaner.clean();
