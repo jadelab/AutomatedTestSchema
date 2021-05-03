@@ -50,7 +50,6 @@ typeHeaders
 	GAutomatedTestSchema_DemoBatchRunner subclassOf RootSchemaGlobal transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	SAutomatedTestSchema_DemoBatchRunner subclassOf RootSchemaSession transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
  
-interfaceDefs
 membershipDefinitions
  
 typeDefinitions
@@ -163,7 +162,7 @@ typeDefinitions
  
 inverseDefinitions
 databaseDefinitions
-AutomatedTestSchema_DemoBatchRunner
+AutomatedTestSchema_DemoBatchRunnerDb
 	(
 	databaseFileDefinitions
 		"autoTest";
@@ -311,12 +310,14 @@ begin
 	
 	write "All schemas: " & runner.results.result;
 	write " Count passed: " & runner.results.countPassed.String;
+	write " Count exceptioned: " & runner.results.countExceptioned.String;
 	write " Count failed: " & runner.results.countFailed.String;
 	
 	foreach schemaResult in runner.results.allSchemaTests do
 		write "Schema=" & schemaResult.schemaName;
-		write " Count passed: " & runner.results.countPassed.String;
-		write " Count failed: " & runner.results.countFailed.String;
+		write " Count passed: " & schemaResult.countPassed.String;
+		write " Count exceptioned: " & schemaResult.countExceptioned.String;
+		write " Count failed: " & schemaResult.countFailed.String;
 		
 		// could go down into each method result via schemaResult.allTests
 	endforeach;

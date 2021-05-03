@@ -9,7 +9,7 @@ constantDefinitions
 		ATAssertError:                 Integer = 64000;
 		ATLifetime_Persistent:         Character = 'P';
 		ATLifetime_Transient:          Character = 'T';
-		ATVersion:                     String = "0.1.6";
+		ATVersion:                     String = "0.1.7";
 localeDefinitions
 	5129 "English (New Zealand)" schemaDefaultLocale;
 libraryDefinitions
@@ -23,6 +23,7 @@ typeHeaders
 	ATBatchOutputFormatBasic subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchOutputFormatCSV subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchOutputFormatFactory subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
+	ATBatchOutputFormatJUnit subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchOutputFormatNUnit subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchOutputTargetFactory subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchOutputTargetFile subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
@@ -359,6 +360,7 @@ typeDefinitions
 		recordTestResult(
 			methodName: String; 
 			failed: Boolean; 
+			exceptioned: Boolean; 
 			passed: Boolean; 
 			skipped: Boolean): ATBatchResultsTest updating, protected; 
 		start(numberOfTestMethods: Integer) protected; 
@@ -435,7 +437,22 @@ typeDefinitions
 		createFormats(
 			outputFormats: Integer; 
 			outputs: Collection input);
+		createJUnit(): ATBatchOutputFormatJUnit;
 		createNUnit(): ATBatchOutputFormatNUnit;
+	)
+	ATBatchOutputFormatJUnit completeDefinition
+	(
+ 
+	jadeMethodDefinitions
+		generateString(root: ATBatchResultsRoot): String updating, protected; 
+		getContents(resultsRoot: ATBatchResultsRoot): String updating; 
+		getLabel(resultsRoot: ATBatchResultsRoot): String updating; 
+	implementInterfaces
+		IATBatchOutputFormat
+		(
+		getContents is getContents;
+		getLabel is getLabel;
+		)
 	)
 	ATBatchOutputFormatNUnit completeDefinition
 	(
@@ -494,6 +511,7 @@ typeDefinitions
 	(
 	attributeDefinitions
 		countAll:                      Integer readonly, virtual; 
+		countExceptioned:              Integer readonly; 
 		countFailed:                   Integer readonly; 
 		countPassed:                   Integer readonly; 
 		countSkipped:                  Integer readonly; 
@@ -518,6 +536,7 @@ typeDefinitions
 			_value: Boolean io) mapping; 
 		updateAppend(
 			failed: Integer; 
+			exceptioned: Integer; 
 			passed: Integer; 
 			skipped: Integer; 
 			durationAdd: Integer) updating; 
@@ -536,6 +555,7 @@ typeDefinitions
 		delete() updating; 
 		getDeveloperCount(): Integer;
 		getDevelopers(): StringArray protected; 
+		getStartTimeISO(): String;
 	)
 	ATBatchResultsSchemaTests completeDefinition
 	(
@@ -655,6 +675,7 @@ typeDefinitions
 		ItemUnsupportedSchemas:        String = "SkipSchemas";
 		ItemWorkers:                   String = "Workers";
 		OutputFormatCSV:               Integer = 4;
+		OutputFormatJUnit:             Integer = 8;
 		OutputFormatNUnit:             Integer = 2;
 		OutputFormatNone:              Integer = 0;
 		OutputTargetFile:              Integer = 2;
@@ -696,6 +717,9 @@ typeDefinitions
  
 	jadeMethodDefinitions
 		initialiseWorkerApp(batchOfTests: Object) updating; 
+		runAborted(
+			batchOfTests: ATBatchResultsSchemaTests input; 
+			message: String) protected; 
 		runTests(batchOfTests: ATBatchResultsSchemaTests input);
 		runTestsException(
 			exp: Exception; 
@@ -1570,6 +1594,7 @@ exportedPackageDefinitions
 		(
 		exportedPropertyDefinitions
 			countAll readonly;
+			countExceptioned readonly;
 			countFailed readonly;
 			countPassed readonly;
 			countSkipped readonly;
@@ -1626,6 +1651,7 @@ exportedPackageDefinitions
 		exportedConstantDefinitions
 			OutputFormatBasic;
 			OutputFormatCSV;
+			OutputFormatJUnit;
 			OutputFormatNUnit;
 			OutputFormatNone;
 			OutputTargetFile;
@@ -2192,7 +2218,8 @@ begin
 	// wait until all are finished to protect any followup functions
 	while allBatchTestsActive.isEmpty() = false do
 		request		:= allBatchTestsActive[1];
-		if request.completed then
+		if request.completed
+		or request.hasAborted then
 			allBatchTestsActive.removeAt(1);
 		else	
 			process.sleep( RecheckTime );			
@@ -2333,7 +2360,7 @@ methodSuccess(testMethodName : String) protected, updating;
 vars
 
 begin
-	recordTestResult( testMethodName, false, true, false );
+	recordTestResult( testMethodName, false, false, true, false );
 end;
 
 }
@@ -2342,6 +2369,7 @@ recordTestResult
 {
 recordTestResult( 	methodName	: String;
 					failed		: Boolean;
+					exceptioned	: Boolean;
 					passed		: Boolean;
 					skipped		: Boolean
 							   ): ATBatchResultsTest protected, updating;
@@ -2369,7 +2397,7 @@ begin
 		create record transient;
 		record.updateId( methodName );
 		record.methodReference	:= meth;
-		record.updateAppend( failed.Integer, passed.Integer, skipped.Integer, clock );
+		record.updateAppend( failed.Integer, exceptioned.Integer, passed.Integer, skipped.Integer, clock );
 		allTests.add( record );	
 	endif;
 			
@@ -2396,9 +2424,12 @@ testFailure(testMethodName : String; callStack : String; failureReason : String)
 
 vars
 	testResult	: ATBatchResultsTest;
-	
+	wasAssert	: Boolean;
+		
 begin
-	testResult	:= recordTestResult( testMethodName, true, false, false );
+	wasAssert	:= failureReason.pos("assert", 1 ) = 1;
+
+	testResult	:= recordTestResult( testMethodName, wasAssert, not wasAssert, false, false );
 	if testResult <> null and testResult.errorReason = null then
 		// log the first error
 		testResult.updateError( failureReason, callStack );
@@ -2414,7 +2445,7 @@ testSkipped(testMethodName : String) updating, protected;
 vars
 		
 begin
-	recordTestResult( testMethodName, false, false, true );
+	recordTestResult( testMethodName, false, false, false, true );
 end;
 
 }
@@ -2528,6 +2559,7 @@ vars
 begin
 	output	:=  " " & root.countPassed.String.padBlanks( 4 ) & " Passed" & CrLf &
 				" " & root.countFailed.String.padBlanks( 4 ) & " Failed" & CrLf &
+				" " & root.countExceptioned.String.padBlanks( 4 ) & " Exceptioned" & CrLf &
 				" " & root.countSkipped.String.padBlanks( 4 ) & " Skipped";
 				
 	return output;
@@ -2596,7 +2628,7 @@ vars
 	lines			: String;
 	
 begin
-	lines	:= "Schema,Test Class,Test Method,Developer,Changed,Duration,Passed,Skipped,Failed,Error";
+	lines	:= "Schema,Test Class,Test Method,Developer,Changed,Duration,Passed,Skipped,Exceptioned,Failed,Error";
 	
 	if includeSummary then
 		line	:= "All,,," 
@@ -2605,6 +2637,7 @@ begin
 						& root.duration.String & ","
 						& getIntegerText( root.countPassed ) & ","
 						& getIntegerText( root.countSkipped ) & ","
+						& getIntegerText( root.countExceptioned ) & ","
 						& getIntegerText( root.countFailed );
 		lines	:= lines & CrLf & line;
 	endif;	
@@ -2736,6 +2769,24 @@ begin
 	if outputFormats.bitAnd( ATBatchSettings.OutputFormatNUnit ) <> 0 then
 		outputs.add( createNUnit() );
 	endif;
+	
+	if outputFormats.bitAnd( ATBatchSettings.OutputFormatJUnit ) <> 0 then
+		outputs.add( createJUnit() );
+	endif;
+end;
+
+}
+
+createJUnit
+{
+createJUnit(): ATBatchOutputFormatJUnit;
+
+vars
+	output	: ATBatchOutputFormatJUnit;
+	
+begin
+	create output transient;
+	return output;
 end;
 
 }
@@ -2755,6 +2806,144 @@ end;
 }
 
 	)
+	ATBatchOutputFormatJUnit (
+	jadeMethodSources
+generateString
+{
+generateString( root : ATBatchResultsRoot )
+					 : String protected, updating;
+
+vars
+	schemaTests		: ATBatchResultsSchemaTests;
+	testResult		: ATBatchResultsTest;
+	iterScm			: Iterator;
+	iterTest		: Iterator;
+	builder			: ATXmlBuilder;
+	errorTag		: String;
+	errorType		: String;
+		
+begin
+	create builder transient;
+
+	builder.appendLine( '<?xml version="1.0" encoding="UTF-8"?>' );
+	
+	builder.appendLine( '<testsuites name="%1" time="%2" tests="%3" failures="%4" errors="%5">'.atPrint( 
+				"UnitTests",
+				root.duration,
+				root.countAll,
+				root.countFailed,
+				root.countExceptioned ));
+	
+	builder.padUp();
+	
+	iterScm	:= root.allSchemaTests.createIterator();
+	while iterScm.next( schemaTests ) do
+	
+		// xml testsuite
+		builder.appendLine( '<testsuite name="%1" tests="%2" skipped="%3" failed="%4" errors="%5" hostname="%6" timestamp="%7" time="%8">'.atPrint (
+						schemaTests.schemaName, 
+						schemaTests.countAll,
+						schemaTests.countSkipped,
+						schemaTests.countFailed,
+						schemaTests.countExceptioned,
+						app.computerName,
+						root.getStartTimeISO(),
+						schemaTests.durationSecs ));
+						
+		builder.padUp();
+		
+		iterTest	:= schemaTests.allTests.createIterator();
+		while iterTest.next( testResult ) do
+
+			// xml testcase
+			builder.append( '<testcase name="%1" classname="%2" time="%3"'.atPrint (
+						testResult.className& "::" & testResult.methodName,
+						testResult.entityName,
+						testResult.durationSecs ), builder.pad );
+			
+			errorTag	:= "";
+			if testResult.countFailed > 0 then
+				errorTag	:= "failure";
+				errorType	:= 'assert';
+			elseif testResult.countExceptioned > 0 then
+				errorTag	:= "error";
+				errorType	:= 'exception';
+			endif;
+			
+			if errorTag <> null then
+						
+				builder.append( ">" & CrLf, 0 );
+				
+				builder.padUp();
+				builder.append( '<%1 name="%1" type="%2" message="%3">'.atPrint (
+						errorTag,
+						errorType,
+						testResult.errorReason ), builder.pad );
+				
+				builder.append( CrLf, 0 );
+				builder.appendCData( "Line:" & CrLf & testResult.errorSourceLine & CrLf & CrLf & "Stack:" & CrLf & testResult.errorStack );
+				
+				builder.appendLine( '</' & errorTag & '>' );
+				builder.padDown();
+				
+				builder.appendLine( '</testcase>' );
+			else
+				builder.append( '/>' & CrLf, 0 );		// finish off on the same line for readability
+			endif;	
+			
+		endwhile;
+		
+		builder.padDown();
+		builder.appendLine( '</testsuite>' );
+	
+		delete iterTest;
+	endwhile;
+								
+	builder.padDown();
+	builder.appendLine( '</testsuites>' );
+		
+	return builder.xml;
+	
+epilog
+	delete builder;
+	delete iterScm;
+end;
+
+
+}
+
+getContents
+{
+getContents( resultsRoot : ATBatchResultsRoot 
+						): String updating;
+
+vars
+
+begin
+	return generateString(resultsRoot);
+end;
+
+}
+
+getLabel
+{
+getLabel( resultsRoot : ATBatchResultsRoot 
+					 ): String updating;
+
+vars
+	fileTitle	: String;
+	
+begin
+	fileTitle	:= resultsRoot.startTime.date().format( "yyyyMMdd" ) & "_" 
+					& resultsRoot.startTime.time().format( "HHmmss" ) &
+					" UnitTestResults.xml";
+	
+	return fileTitle;
+end;
+
+}
+
+	)
 	ATBatchOutputFormatNUnit (
 	jadeMethodSources
 generateString
@@ -2762,7 +2951,8 @@ generateString
 generateString( root : ATBatchResultsRoot )
 					 : String protected, updating;
 
-			 
+// inconclusive format online as at time or writing 
+
 vars
 	schemaTests		: ATBatchResultsSchemaTests;
 	testResult		: ATBatchResultsTest;
@@ -2774,27 +2964,25 @@ begin
 	create builder transient;
 
 	builder.appendLine( '<?xml version="1.0" encoding="UTF-8"?>' );
-		
-	// xml testrun
-	builder.appendLine( '<test-run id="%1" run-date="%2" start-time="%3" total="%4" passed="%5" failed="%6" skipped="%7" time="%8" result="%9">'.atPrint( 
+	
+	builder.appendLine( '<test-results id="%1" date="%2" time="%3" total="%4" passed="%5" failures="%6" errors="%7" skipped="%8" result="%9">'.atPrint( 
 				0,
 				root.startTime.date().format( "yyyy-MM-dd" ),
 				root.startTime.time().format( "HH:mm:ss" ),
 				root.countAll,
 				root.countPassed,
 				root.countFailed,
+				root.countExceptioned,
 				root.countSkipped,
-				root.durationSecs,
 				root.result ));
-				
 	
 	builder.padUp();
-
+	
 	iterScm	:= root.allSchemaTests.createIterator();
 	while iterScm.next( schemaTests ) do
 	
 		// xml testsuite
-		builder.appendLine( '<test-suite type="%1" name="%2" result="%3" duration="%4" total="%5" passed="%6" failed="%7" skipped="%8">'.atPrint (
+		builder.appendLine( '<test-suite type="%1" name="%2" executed="True" result="%3" time="%4" total="%5" passed="%6" failed="%7" skipped="%8" success="%9">'.atPrint (
 						"TestSuite",
 						schemaTests.schemaName, 
 						schemaTests.result,
@@ -2802,23 +2990,28 @@ begin
 						schemaTests.countAll,
 						schemaTests.countPassed, 
 						schemaTests.countFailed, 
-						schemaTests.countSkipped ));
+						schemaTests.countSkipped,
+						schemaTests.success ));
 
 		builder.padUp();
-	
+		
+		builder.appendLine( '<results>' );
+		builder.padUp();
+			
 		iterTest	:= schemaTests.allTests.createIterator();
 		while iterTest.next( testResult ) do
 
 			// xml testcase
-			builder.append( '<test-case classname="%1" name="%2" fullname="%3" result="%4" duration="%5" asserts="%6">'.atPrint (
+			builder.append( '<test-case classname="%1" name="%2" fullname="%3" result="%4" duration="%5" success="%6">'.atPrint (
 						testResult.className,
 						testResult.methodName,
 						testResult.entityName,
 						testResult.result,
 						testResult.durationSecs,
-						testResult.countFailed ), builder.pad );
+						testResult.success ), builder.pad );
 			
-			if testResult.countFailed > 0 then
+			if testResult.countFailed > 0 
+			or testResult.countExceptioned > 0 then
 						
 				builder.append( CrLf, 0 );
 				
@@ -2848,17 +3041,19 @@ begin
 			endif;	
 			
 		endwhile;
-	
-		builder.padDown();
 
+		builder.padDown();
+		builder.appendLine( '</results>' );
+		
+		builder.padDown();
 		builder.appendLine( '</test-suite>' );
 	
 		delete iterTest;
 	endwhile;
 								
 	builder.padDown();
-	builder.appendLine( '</test-run>' );
-	
+	builder.appendLine( '</test-results>' );
+		
 	return builder.xml;
 	
 epilog
@@ -3006,6 +3201,7 @@ vars
 
 begin
 	updateAppend( 	from.countFailed,	
+					from.countExceptioned,
 					from.countPassed,
 					from.countSkipped,
 					from.duration );
@@ -3021,7 +3217,7 @@ vars
 
 begin
 	if set = false then
-		_value	:= countFailed + countPassed + countSkipped;
+		_value	:= countFailed + countPassed + countSkipped + countExceptioned;
 	endif;
 end;
 
@@ -3053,7 +3249,7 @@ begin
 	if set = false then
 		if countAll = 0 then
 			_value	:= "Inconclusive";
-		elseif countFailed > 0 then
+		elseif countFailed > 0 or countExceptioned > 0 then
 			_value	:= "Failed";
 		elseif countPassed > 0 then
 			_value	:= "Passed";
@@ -3073,7 +3269,7 @@ vars
 
 begin
 	if set = false then
-		_value	:= countFailed = 0 and countAll > 0;
+		_value	:= countFailed = 0 and countExceptioned = 0 and countAll > 0;
 	endif;
 end;
 
@@ -3082,6 +3278,7 @@ end;
 updateAppend
 {
 updateAppend( 	failed		: Integer;
+				exceptioned : Integer;
 				passed		: Integer;
 				skipped		: Integer;
 				durationAdd	: Integer ) updating;
@@ -3090,6 +3287,7 @@ vars
 
 begin
 	countFailed		:= failed + countFailed;
+	countExceptioned:= exceptioned + countExceptioned; 
 	countPassed		:= passed + countPassed;
 	countSkipped	:= skipped + countSkipped;
 	duration		:= durationAdd + duration;
@@ -3173,6 +3371,19 @@ begin
 epilog
 	delete iterScm;
 end;
+}
+
+getStartTimeISO
+{
+getStartTimeISO(): String;
+
+vars
+
+begin
+	// 2014-01-21T16:17:18
+	return startTime.date().format( "yyyy-MM-dd" ) & "T" & startTime.time().format( "HH:mm:ss" );
+end;
+
 }
 
 	)
@@ -3871,11 +4082,10 @@ vars
 begin
 	create jadeRunner transient;
 	jadeRunner.setTestListener( listener );
-	
 	jadeRunner.invokeMethod( applicationContext, JadeTestRunner::runTests, tests );
-
+	
 epilog
-    delete jadeRunner;
+	delete jadeRunner;
 end;
 
 
@@ -3898,12 +4108,36 @@ end;
 
 }
 
+runAborted
+{
+runAborted(batchOfTests : ATBatchResultsSchemaTests input;
+		   message : String) protected;
+
+vars
+
+begin
+	if process.isInTransientTransactionState then
+		abortTransientTransaction;
+	endif;
+
+	if batchOfTests <> null then
+		if batchOfTests.hasAborted = false then
+			beginTransientTransaction;
+				batchOfTests.abort( message );
+			commitTransientTransaction;	
+		endif;
+	endif;
+end;
+
+}
+
 runTests
 {
 runTests(batchOfTests : ATBatchResultsSchemaTests input);
 
 vars
 	tester			: ATBatchTestExecuter;
+	completed		: Boolean;
 	
 begin
 	on Exception do runTestsException( exception, batchOfTests );
@@ -3912,12 +4146,20 @@ begin
 	create tester transient;
 	batchOfTests.allMethods.copy( tester.allTests );
 	tester.run();
-	
+
 	// convert the results to shared transients
 	beginTransientTransaction;
 	batchOfTests.copyTests( tester.listener.allTests );
 	batchOfTests.lockInResults();
 	commitTransientTransaction;
+	
+	completed	:= true;
+
+epilog
+	// jade no longer allows for exceptions to be trapped (J2018 or J2020)
+	if not completed then
+		runAborted( batchOfTests, "An uncatchable exception has occurred, aborting" );
+	endif;
 end;
 
 }
@@ -3931,16 +4173,7 @@ runTestsException( exp 			: Exception;
 vars
 	
 begin
-	if batchOfTests <> null then
-		if process.isInTransientTransactionState then
-			abortTransientTransaction;
-		endif;
-		
-		beginTransientTransaction;
-		batchOfTests.abort( exp.errorCode.String & " " & exp.text );
-		commitTransientTransaction;	
-	
-	endif;
+	runAborted( batchOfTests, exp.errorCode.String & " " & exp.text );
 
 	return Ex_Pass_Back;
 end;
@@ -8460,6 +8693,8 @@ begin
 	create runner transient;
 	runner.batchSettings.workers	:= 1;
 	runner.locator.annotations.add( "#IntegrationTest" );
+	runner.locator.addSchemaName( "AutomatedTestSchema_TestInternals" );
+	
 	runner.batchSettings.outputFormat	:= ATBatchSettings.OutputFormatNUnit;
 	runner.batchSettings.outputTarget	:= ATBatchSettings.OutputTargetFile;
 		
@@ -8492,7 +8727,7 @@ vars
 	
 begin
 	create runner transient;
-	runner.batchSettings.workers		:= 0;
+	runner.batchSettings.workers		:= 3;
 	runner.batchSettings.outputFormat	:= ATBatchSettings.OutputFormatNUnit;
 	runner.batchSettings.outputTarget	:= ATBatchSettings.OutputTargetFile;
 		
