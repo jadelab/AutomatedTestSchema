@@ -16,6 +16,7 @@ libraryDefinitions
 typeHeaders
 	AutomatedTestSchema subclassOf RootSchemaApp transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	AutomatedTest subclassOf Object abstract, transient; 
+	ATAppServerSettings subclassOf AutomatedTest transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	ATBatch subclassOf AutomatedTest abstract, transient; 
 	ATBatchController subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchListener subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
@@ -37,6 +38,7 @@ typeHeaders
 	ATBatchSettings subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchTestExecuter subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
 	ATBatchWorkerInitialiser subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
+	ATJadeUnitTestBatchListener subclassOf ATBatch transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
 	ATBuilder subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
 	ATChangeTracker subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
 	ATChangeTrackerObject subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
@@ -301,6 +303,23 @@ typeDefinitions
 	)
 	AutomatedTest completeDefinition
 	(
+	)
+	ATAppServerSettings completeDefinition
+	(
+ 
+	jadeMethodDefinitions
+		getIniFileName(): String typeMethod; 
+		getProfileString(
+			section: String; 
+			key: String; 
+			default: String): String typeMethod; 
+		isProfileStringDefined(
+			section: String; 
+			key: String): Boolean typeMethod; 
+		setProfileString(
+			section: String; 
+			key: String; 
+			value: String): Boolean typeMethod; 
 	)
 	ATBatch completeDefinition
 	(
@@ -729,6 +748,43 @@ typeDefinitions
 			theObject: Object; 
 			eventTag: Integer; 
 			userInfo: Any) updating; 
+	)
+	ATJadeUnitTestBatchListener completeDefinition
+	(
+	referenceDefinitions
+		listener:                      ATBatchListener  protected; 
+		outputController:              ATBatchOutputController  protected; 
+ 
+	jadeMethodDefinitions
+		create() updating; 
+		delete() updating; 
+		finish(
+			elapsedTime: Time; 
+			testsFailed: Integer; 
+			testsSkipped: Integer; 
+			testsSucceeded: Integer) updating, protected; 
+		getOutputSettings(): ATBatchSettings protected; 
+		getResults(): ATBatchResultsRoot protected; 
+		message(messageText: String) protected; 
+		methodSuccess(testMethodName: String) protected; 
+		start(numberOfTestMethods: Integer) protected; 
+		testFailure(
+			testMethodName: String; 
+			callStack: String; 
+			failureReason: String) protected; 
+		testSkipped(testMethodName: String) protected; 
+		testSuccess(testMethodName: String) protected; 
+	implementInterfaces
+		JadeTestListenerIF
+		(
+		finish is finish;
+		message is message;
+		methodSuccess is methodSuccess;
+		start is start;
+		testFailure is testFailure;
+		testSkipped is testSkipped;
+		testSuccess is testSuccess;
+		)
 	)
 	ATBuilder completeDefinition
 	(
@@ -1893,6 +1949,61 @@ begin
 		raise exp precondition;		
 		
 	endif;
+end;
+
+}
+
+	)
+	ATAppServerSettings (
+	jadeMethodSources
+getIniFileName
+{
+getIniFileName(): String typeMethod;
+
+begin
+
+	return app.getIniFileNameAppServer();
+
+end;
+
+}
+
+getProfileString
+{
+getProfileString(section: String; key: String; default: String): String typeMethod;
+
+begin
+
+	return app.getProfileStringAppServer( getIniFileName(), section, key, default );
+
+end;
+
+}
+
+isProfileStringDefined
+{
+isProfileStringDefined( section: String; key: String ): Boolean typeMethod;
+
+constants 
+
+	Value_NotDefined	: String = "<not_defined>";
+
+begin
+
+	return getProfileString( section, key, Value_NotDefined ) <> Value_NotDefined;
+
+end;
+
+}
+
+setProfileString
+{
+setProfileString(section: String; key: String; value: String): Boolean typeMethod;
+
+begin
+
+	return app.setProfileStringAppServer( getIniFileName(), section, key, value );
+
 end;
 
 }
@@ -4202,6 +4313,210 @@ epilog
 	endif;
 end;
 
+}
+
+	)
+	ATJadeUnitTestBatchListener (
+	jadeMethodSources
+create
+{
+create() updating;
+
+vars
+
+	settings : ATBatchSettings;
+	
+begin
+
+	listener := create ATBatchListener() transient;
+
+	settings := getOutputSettings();
+
+	outputController := create ATBatchOutputController() transient;
+	outputController.applySettings(settings);
+	
+epilog
+
+	delete settings;
+	
+end;
+
+}
+
+delete
+{
+delete() updating;
+
+begin
+
+	delete listener;
+	delete outputController;
+
+end;
+
+}
+
+finish
+{
+finish(elapsedTime : Time; testsFailed : Integer; testsSkipped : Integer; testsSucceeded : Integer) updating, protected;
+
+vars
+
+	results	: ATBatchResultsRoot;
+
+begin
+
+	if listener <> null then
+		listener.JadeTestListenerIF.finish(elapsedTime,  testsFailed, testsSkipped, testsSucceeded);
+	endif;
+
+	results := getResults();
+	outputController.run(results);
+	
+epilog
+
+	delete results;
+
+end;
+
+}
+
+getOutputSettings
+{
+getOutputSettings(): ATBatchSettings protected;
+
+vars
+
+	settings	: ATBatchSettings;
+
+begin
+
+	settings := create ATBatchSettings() transient;
+	settings.outputFormat := ATAppServerSettings@getProfileString(ATJadeUnitTestBatchListener.name, "OutputFormat", ATBatchSettings.OutputFormatJUnit.String).Integer;
+	settings.outputTarget := ATAppServerSettings@getProfileString(ATJadeUnitTestBatchListener.name, "OutputTarget", ATBatchSettings.OutputTargetFile.String).Integer; 
+
+	return settings;
+
+end;
+
+}
+
+getResults
+{
+getResults() : ATBatchResultsRoot protected;
+
+vars
+	results 		: ATBatchResultsRoot;
+	iter			: Iterator;
+	result 			: ATBatchResultsTest;
+	test			: ATBatchResultsTest;
+	schemaResults 	: ATBatchResultsSchemaTests;
+
+begin
+
+	results  := create ATBatchResultsRoot() transient;
+
+	iter := listener.allTests.createIterator();
+	while iter.next(test) do
+	
+		schemaResults := results .allSchemaTests[test.schemaName];
+		if schemaResults = null then 
+			schemaResults := create ATBatchResultsSchemaTests transient;
+			schemaResults.schemaName := test.schemaName;
+			results.allSchemaTests.add(schemaResults);
+		endif;
+		
+		schemaResults.allTests.add(test);
+		schemaResults.copyResults(test);
+		results.copyResults(test);
+		
+	endwhile;
+	
+	return results;
+	
+epilog 
+
+	delete iter;
+
+end;
+}
+
+message
+{
+message(messageText : String) protected;
+
+begin
+
+	if listener <> null then
+		listener.JadeTestListenerIF.message(messageText);
+	endif;
+	
+end;
+}
+
+methodSuccess
+{
+methodSuccess(testMethodName : String) protected;
+
+begin
+
+	if listener <> null then
+		listener.JadeTestListenerIF.methodSuccess(testMethodName);
+	endif;
+	
+end;
+}
+
+start
+{
+start(numberOfTestMethods : Integer) protected;
+
+begin
+
+	if listener <> null then
+		listener.JadeTestListenerIF.start(numberOfTestMethods);
+	endif;
+	
+end;
+}
+
+testFailure
+{
+testFailure(testMethodName : String; callStack : String; failureReason : String) protected;
+
+begin
+
+	if listener <> null then
+		listener.JadeTestListenerIF.testFailure(testMethodName, callStack, failureReason);
+	endif;
+	
+end;
+}
+
+testSkipped
+{
+testSkipped(testMethodName : String) protected;
+
+begin
+
+	if listener <> null then
+		listener.JadeTestListenerIF.testSkipped(testMethodName);
+	endif;
+	
+end;
+}
+
+testSuccess
+{
+testSuccess(testMethodName : String) protected;
+
+begin
+
+	if listener <> null then
+		listener.JadeTestListenerIF.testSuccess(testMethodName);
+	endif;
+	
+end;
 }
 
 	)
