@@ -1,7 +1,7 @@
 
-jadeVersionNumber "16.0.02";
+jadeVersionNumber "20.0.02";
 schemaDefinition
-AutomatedTestSchema subschemaOf RootSchema completeDefinition; 
+AutomatedTestSchema subschemaOf RootSchema completeDefinition;
 importedPackageDefinitions
 constantDefinitions
 	categoryDefinition ATGeneral
@@ -9,69 +9,69 @@ constantDefinitions
 		ATAssertError:                 Integer = 64000;
 		ATLifetime_Persistent:         Character = 'P';
 		ATLifetime_Transient:          Character = 'T';
-		ATVersion:                     String = "0.1.7";
+		ATVersion:                     String = "0.1.9";
 localeDefinitions
 	5129 "English (New Zealand)" schemaDefaultLocale;
 libraryDefinitions
 typeHeaders
-	AutomatedTestSchema subclassOf RootSchemaApp transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
-	AutomatedTest subclassOf Object abstract, transient; 
-	ATAppServerSettings subclassOf AutomatedTest transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
-	ATBatch subclassOf AutomatedTest abstract, transient; 
-	ATBatchController subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchListener subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchOutputController subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchOutputFormatBasic subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchOutputFormatCSV subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchOutputFormatFactory subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchOutputFormatJUnit subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchOutputFormatNUnit subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchOutputTargetFactory subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchOutputTargetFile subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchOutputTargetInterpreter subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchResults subclassOf ATBatch abstract, transient; 
-	ATBatchResultsRoot subclassOf ATBatchResults transient, subclassSharedTransientAllowed, subclassTransientAllowed; 
-	ATBatchResultsSchemaTests subclassOf ATBatchResults transient, subclassSharedTransientAllowed, subclassTransientAllowed; 
-	ATBatchResultsTest subclassOf ATBatchResults transient, subclassSharedTransientAllowed, subclassTransientAllowed; 
-	ATBatchRunner subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchRunnerCommand subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchSettings subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchTestExecuter subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchWorkerInitialiser subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed; 
-	ATJadeUnitTestBatchListener subclassOf ATBatch transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
-	ATBuilder subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATChangeTracker subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATChangeTrackerObject subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATCommandLineBuilder subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATCommandLineReader subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATDatabase subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATDeltaMode subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATFileLogger subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATFileWriter subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATFixtureMaker subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATGarbageCollector subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATLocator subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATLocatorSettings subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATMock subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATMockMethod subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATPurger subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATSchemaEntityFinder subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATSchemaFileCleaner subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATVariableCollection subclassOf AutomatedTest abstract; 
-	ATVariableStringArray subclassOf ATVariableCollection transient, transientAllowed, subclassTransientAllowed; 
-	ATXmlBuilder subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed; 
-	ATAssertException subclassOf NormalException transient, transientAllowed, subclassTransientAllowed; 
-	GAutomatedTestSchema subclassOf RootSchemaGlobal transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
-	SAutomatedTestSchema subclassOf RootSchemaSession transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
-	ATBatchResultsSchemaTestsDict subclassOf MemberKeyDictionary duplicatesAllowed, loadFactor = 66, transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
-	ATBatchResultsTestDict subclassOf MemberKeyDictionary loadFactor = 66, transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
-	ATChangeTrackerObjectDict subclassOf MemberKeyDictionary loadFactor = 66, transient, transientAllowed, subclassTransientAllowed; 
-	ATBatchResultsRequestArray subclassOf ObjectArray loadFactor = 66, transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed; 
-	IATBatchOutputFormatArray subclassOf ObjectArray loadFactor = 66, transient, transientAllowed, subclassTransientAllowed; 
-	IATBatchOutputTargetArray subclassOf ObjectArray loadFactor = 66, transient, transientAllowed, subclassTransientAllowed; 
+	AutomatedTestSchema subclassOf RootSchemaApp transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed;
+	AutomatedTest subclassOf Object abstract, transient;
+	ATAppServerSettings subclassOf AutomatedTest transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed;
+	ATBatch subclassOf AutomatedTest abstract, transient;
+	ATBatchController subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed;
+	ATBatchListener subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed;
+	ATBatchOutputController subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed;
+	ATBatchOutputFormatBasic subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed;
+	ATBatchOutputFormatCSV subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed;
+	ATBatchOutputFormatFactory subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed;
+	ATBatchOutputFormatJUnit subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed;
+	ATBatchOutputFormatNUnit subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed;
+	ATBatchOutputTargetFactory subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed;
+	ATBatchOutputTargetFile subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed;
+	ATBatchOutputTargetInterpreter subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed;
+	ATBatchResults subclassOf ATBatch abstract, transient;
+	ATBatchResultsRoot subclassOf ATBatchResults transient, subclassSharedTransientAllowed, subclassTransientAllowed;
+	ATBatchResultsSchemaTests subclassOf ATBatchResults transient, subclassSharedTransientAllowed, subclassTransientAllowed;
+	ATBatchResultsTest subclassOf ATBatchResults transient, subclassSharedTransientAllowed, subclassTransientAllowed;
+	ATBatchRunner subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed;
+	ATBatchRunnerCommand subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed;
+	ATBatchSettings subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed;
+	ATBatchTestExecuter subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed;
+	ATBatchWorkerInitialiser subclassOf ATBatch transient, transientAllowed, subclassTransientAllowed;
+	ATJadeUnitTestBatchListener subclassOf ATBatch transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed;
+	ATBuilder subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATChangeTracker subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATChangeTrackerObject subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATCommandLineBuilder subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATCommandLineReader subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATDatabase subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATDeltaMode subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATFileLogger subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATFileWriter subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATFixtureMaker subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATGarbageCollector subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATLocator subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATLocatorSettings subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATMock subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATMockMethod subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATPurger subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATSchemaEntityFinder subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATSchemaFileCleaner subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATVariableCollection subclassOf AutomatedTest abstract;
+	ATVariableStringArray subclassOf ATVariableCollection transient, transientAllowed, subclassTransientAllowed;
+	ATXmlBuilder subclassOf AutomatedTest transient, transientAllowed, subclassTransientAllowed;
+	ATAssertException subclassOf NormalException transient, transientAllowed, subclassTransientAllowed;
+	GAutomatedTestSchema subclassOf RootSchemaGlobal transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed;
+	SAutomatedTestSchema subclassOf RootSchemaSession transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed;
+	ATBatchResultsSchemaTestsDict subclassOf MemberKeyDictionary duplicatesAllowed, loadFactor = 66, transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed;
+	ATBatchResultsTestDict subclassOf MemberKeyDictionary loadFactor = 66, transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed;
+	ATChangeTrackerObjectDict subclassOf MemberKeyDictionary loadFactor = 66, transient, transientAllowed, subclassTransientAllowed;
+	ATBatchResultsRequestArray subclassOf ObjectArray loadFactor = 66, transient, sharedTransientAllowed, transientAllowed, subclassSharedTransientAllowed, subclassTransientAllowed;
+	IATBatchOutputFormatArray subclassOf ObjectArray loadFactor = 66, transient, transientAllowed, subclassTransientAllowed;
+	IATBatchOutputTargetArray subclassOf ObjectArray loadFactor = 66, transient, transientAllowed, subclassTransientAllowed;
  
 interfaceDefs
-	IATBatchOutputFormat 
+	IATBatchOutputFormat
 	(
  
 	jadeMethodDefinitions
@@ -79,7 +79,7 @@ interfaceDefs
 		getLabel(root: ATBatchResultsRoot): String;
 	)
  
-	IATBatchOutputTarget 
+	IATBatchOutputTarget
 	(
  
 	jadeMethodDefinitions
@@ -88,7 +88,7 @@ interfaceDefs
 			contents: String);
 	)
  
-	IATBuilderModify 
+	IATBuilderModify
 	(
  
 	jadeMethodDefinitions
@@ -106,7 +106,7 @@ interfaceDefs
 		setNull(property: Property): IATBuilderModify;
 	)
  
-	IATBuilderCommands 
+	IATBuilderCommands
 	(
  
 	jadeMethodDefinitions
@@ -122,7 +122,7 @@ interfaceDefs
 		result(): Object;
 	)
  
-	IATDatabaseCommands 
+	IATDatabaseCommands
 	(
  
 	jadeMethodDefinitions
@@ -146,7 +146,7 @@ interfaceDefs
 		purge();
 	)
  
-	IATFixtureMaker 
+	IATFixtureMaker
 	(
  
 	jadeMethodDefinitions
@@ -155,7 +155,7 @@ interfaceDefs
 		result(): Object;
 	)
  
-	IATFixtureMakerEvents 
+	IATFixtureMakerEvents
 	(
  
 	jadeMethodDefinitions
@@ -164,7 +164,7 @@ interfaceDefs
 		fixtureStarted();
 	)
  
-	IATFixtureMakerRegistration 
+	IATFixtureMakerRegistration
 	(
  
 	jadeMethodDefinitions
@@ -173,7 +173,7 @@ interfaceDefs
 			prerequisiteMethods: ParamListType);
 	)
  
-	IATFixtureMakerTarget 
+	IATFixtureMakerTarget
 	(
  
 	jadeMethodDefinitions
@@ -184,7 +184,7 @@ interfaceDefs
 		result(): Object;
 	)
  
-	IATGarbageCollector 
+	IATGarbageCollector
 	(
  
 	jadeMethodDefinitions
@@ -196,7 +196,7 @@ interfaceDefs
 		remove(object: Object);
 	)
  
-	IATGarbageCollectorShared 
+	IATGarbageCollectorShared
 	(
  
 	jadeMethodDefinitions
@@ -204,7 +204,7 @@ interfaceDefs
 		gcShare(otherGCOwner: IATGarbageCollectorShared);
 	)
  
-	IATMockMethod 
+	IATMockMethod
 	(
  
 	jadeMethodDefinitions
@@ -222,7 +222,7 @@ interfaceDefs
 		withSource(source: String): IATMockMethod;
 	)
  
-	IATRunner 
+	IATRunner
 	(
  
 	jadeMethodDefinitions
@@ -233,7 +233,7 @@ interfaceDefs
 			prerequisiteMethods: ParamListType);
 	)
  
-	IATRunnerTarget 
+	IATRunnerTarget
 	(
  
 	jadeMethodDefinitions
@@ -244,7 +244,7 @@ interfaceDefs
 		result(): Object;
 	)
  
-	IATSettingsBuilder 
+	IATSettingsBuilder
 	(
  
 	jadeMethodDefinitions
@@ -257,7 +257,7 @@ interfaceDefs
 			values: StringArray): String;
 	)
  
-	IATSettingsReader 
+	IATSettingsReader
 	(
  
 	jadeMethodDefinitions
@@ -292,8 +292,8 @@ typeDefinitions
 	(
  
 	jadeMethodDefinitions
-		initialiseTestRunnerCommandline() updating, protected; 
-		intialiseAutomatedTestRunner(batchRequest: Object) updating, protected; 
+		initialiseTestRunnerCommandline() updating, protected;
+		intialiseAutomatedTestRunner(batchRequest: Object) updating, protected;
 		mustExist(
 			target: Any; 
 			targetName: String);
@@ -308,18 +308,18 @@ typeDefinitions
 	(
  
 	jadeMethodDefinitions
-		getIniFileName(): String typeMethod; 
+		getIniFileName(): String typeMethod;
 		getProfileString(
 			section: String; 
 			key: String; 
-			default: String): String typeMethod; 
+			default: String): String typeMethod;
 		isProfileStringDefined(
 			section: String; 
-			key: String): Boolean typeMethod; 
+			key: String): Boolean typeMethod;
 		setProfileString(
 			section: String; 
 			key: String; 
-			value: String): Boolean typeMethod; 
+			value: String): Boolean typeMethod;
 	)
 	ATBatch completeDefinition
 	(
@@ -329,66 +329,66 @@ typeDefinitions
 	constantDefinitions
 		RecheckTime:                   Integer = 50;
 	referenceDefinitions
-		allBatchTestsActive:           ATBatchResultsRequestArray  implicitMemberInverse, protected; 
-		allBatchTestsUnfilled:         ATBatchResultsSchemaTestsDict  implicitMemberInverse, protected; 
-		allUnitTests:                  MethodColl  implicitMemberInverse, readonly; 
-		gc:                            ATGarbageCollector  protected; 
-		results:                       ATBatchResultsRoot  readonly; 
+		allBatchTestsActive:           ATBatchResultsRequestArray  implicitMemberInverse, protected;
+		allBatchTestsUnfilled:         ATBatchResultsSchemaTestsDict  implicitMemberInverse, protected;
+		allUnitTests:                  MethodColl  implicitMemberInverse, readonly;
+		gc:                            ATGarbageCollector  protected;
+		results:                       ATBatchResultsRoot  readonly;
 		settings:                      ATBatchSettings;
  
 	jadeMethodDefinitions
-		batchRootCreate() updating, protected; 
-		batchRootDestroy() updating, protected; 
-		batchSchemaCreate(schemaName: String): ATBatchResultsSchemaTests protected; 
-		clear() updating; 
-		create() updating; 
-		delete() updating; 
-		execute() updating; 
-		requestApplicationAvailable() protected; 
+		batchRootCreate() updating, protected;
+		batchRootDestroy() updating, protected;
+		batchSchemaCreate(schemaName: String): ATBatchResultsSchemaTests protected;
+		clear() updating;
+		create() updating;
+		delete() updating;
+		execute() updating;
+		requestApplicationAvailable() protected;
 		requestApplicationSchema(
 			schemaName: String; 
-			appName: String): String protected; 
-		requestApplicationStart(request: ATBatchResultsSchemaTests input) protected; 
+			appName: String): String protected;
+		requestApplicationStart(request: ATBatchResultsSchemaTests input) protected;
 		requestApplicationStartException(
 			exp: Exception; 
-			request: ATBatchResultsSchemaTests): Integer protected; 
-		requestsConsolidate() protected; 
-		requestsRun() updating, protected; 
-		requestsSetup() updating, protected; 
-		validateSettings() protected; 
+			request: ATBatchResultsSchemaTests): Integer protected;
+		requestsConsolidate() protected;
+		requestsRun() updating, protected;
+		requestsSetup() updating, protected;
+		validateSettings() protected;
 	)
 	ATBatchListener completeDefinition
 	(
 	attributeDefinitions
-		clockLast:                     Integer protected; 
+		clockLast:                     Integer protected;
 	referenceDefinitions
-		allTests:                      ATBatchResultsTestDict  implicitMemberInverse, readonly; 
-		methodFinder:                  ATSchemaEntityFinder  protected; 
+		allTests:                      ATBatchResultsTestDict  implicitMemberInverse, readonly;
+		methodFinder:                  ATSchemaEntityFinder  protected;
  
 	jadeMethodDefinitions
-		create() updating; 
-		delete() updating; 
+		create() updating;
+		delete() updating;
 		finish(
 			elapsedTime: Time; 
 			testsFailed: Integer; 
 			testsSkipped: Integer; 
-			testsSucceeded: Integer) protected; 
-		getNextDuration(): Integer updating, protected; 
-		message(messageText: String) updating, protected; 
-		methodSuccess(testMethodName: String) updating, protected; 
+			testsSucceeded: Integer) protected;
+		getNextDuration(): Integer updating, protected;
+		message(messageText: String) updating, protected;
+		methodSuccess(testMethodName: String) updating, protected;
 		recordTestResult(
 			methodName: String; 
 			failed: Boolean; 
 			exceptioned: Boolean; 
 			passed: Boolean; 
-			skipped: Boolean): ATBatchResultsTest updating, protected; 
-		start(numberOfTestMethods: Integer) protected; 
+			skipped: Boolean): ATBatchResultsTest updating, protected;
+		start(numberOfTestMethods: Integer) protected;
 		testFailure(
 			testMethodName: String; 
 			callStack: String; 
-			failureReason: String) updating, protected; 
-		testSkipped(testMethodName: String) updating, protected; 
-		testSuccess(testMethodName: String) protected; 
+			failureReason: String) updating, protected;
+		testSkipped(testMethodName: String) updating, protected;
+		testSuccess(testMethodName: String) protected;
 	implementInterfaces
 		JadeTestListenerIF
 		(
@@ -406,20 +406,20 @@ typeDefinitions
 	attributeDefinitions
 		fileFolder:                    String;
 	referenceDefinitions
-		outputFormats:                 IATBatchOutputFormatArray  implicitMemberInverse, readonly; 
-		outputTargets:                 IATBatchOutputTargetArray  implicitMemberInverse, readonly; 
+		outputFormats:                 IATBatchOutputFormatArray  implicitMemberInverse, readonly;
+		outputTargets:                 IATBatchOutputTargetArray  implicitMemberInverse, readonly;
  
 	jadeMethodDefinitions
-		applySettings(settings: ATBatchSettings) updating; 
-		delete() updating; 
+		applySettings(settings: ATBatchSettings) updating;
+		delete() updating;
 		hasOutputs(): Boolean;
-		run(results: ATBatchResultsRoot) updating; 
+		run(results: ATBatchResultsRoot) updating;
 	)
 	ATBatchOutputFormatBasic completeDefinition
 	(
  
 	jadeMethodDefinitions
-		generateString(root: ATBatchResultsRoot): String protected; 
+		generateString(root: ATBatchResultsRoot): String protected;
 		getContents(resultsRoot: ATBatchResultsRoot): String;
 		getLabel(resultsRoot: ATBatchResultsRoot): String;
 	implementInterfaces
@@ -435,11 +435,11 @@ typeDefinitions
 		includeSummary:                Boolean;
  
 	jadeMethodDefinitions
-		create() updating; 
-		generateString(root: ATBatchResultsRoot): String protected; 
-		getContents(resultsRoot: ATBatchResultsRoot): String updating; 
-		getIntegerText(value: Integer): String protected; 
-		getLabel(resultsRoot: ATBatchResultsRoot): String updating; 
+		create() updating;
+		generateString(root: ATBatchResultsRoot): String protected;
+		getContents(resultsRoot: ATBatchResultsRoot): String updating;
+		getIntegerText(value: Integer): String protected;
+		getLabel(resultsRoot: ATBatchResultsRoot): String updating;
 	implementInterfaces
 		IATBatchOutputFormat
 		(
@@ -463,9 +463,9 @@ typeDefinitions
 	(
  
 	jadeMethodDefinitions
-		generateString(root: ATBatchResultsRoot): String updating, protected; 
-		getContents(resultsRoot: ATBatchResultsRoot): String updating; 
-		getLabel(resultsRoot: ATBatchResultsRoot): String updating; 
+		generateString(root: ATBatchResultsRoot): String updating, protected;
+		getContents(resultsRoot: ATBatchResultsRoot): String updating;
+		getLabel(resultsRoot: ATBatchResultsRoot): String updating;
 	implementInterfaces
 		IATBatchOutputFormat
 		(
@@ -477,9 +477,9 @@ typeDefinitions
 	(
  
 	jadeMethodDefinitions
-		generateString(root: ATBatchResultsRoot): String updating, protected; 
-		getContents(resultsRoot: ATBatchResultsRoot): String updating; 
-		getLabel(resultsRoot: ATBatchResultsRoot): String updating; 
+		generateString(root: ATBatchResultsRoot): String updating, protected;
+		getContents(resultsRoot: ATBatchResultsRoot): String updating;
+		getLabel(resultsRoot: ATBatchResultsRoot): String updating;
 	implementInterfaces
 		IATBatchOutputFormat
 		(
@@ -519,7 +519,7 @@ typeDefinitions
 	jadeMethodDefinitions
 		deliver(
 			label: String; 
-			contents: String) updating; 
+			contents: String) updating;
 	implementInterfaces
 		IATBatchOutputTarget
 		(
@@ -529,152 +529,152 @@ typeDefinitions
 	ATBatchResults completeDefinition
 	(
 	attributeDefinitions
-		countAll:                      Integer readonly, virtual; 
-		countExceptioned:              Integer readonly; 
-		countFailed:                   Integer readonly; 
-		countPassed:                   Integer readonly; 
-		countSkipped:                  Integer readonly; 
-		duration:                      Integer readonly; 
-		durationSecs:                  Decimal[10,3] readonly, virtual; 
-		result:                        String readonly, virtual; 
-		success:                       Boolean readonly, virtual; 
+		countAll:                      Integer readonly, virtual;
+		countExceptioned:              Integer readonly;
+		countFailed:                   Integer readonly;
+		countPassed:                   Integer readonly;
+		countSkipped:                  Integer readonly;
+		duration:                      Integer readonly;
+		durationSecs:                  Decimal[10,3] readonly, virtual;
+		result:                        String readonly, virtual;
+		success:                       Boolean readonly, virtual;
  
 	jadeMethodDefinitions
-		copyResults(from: ATBatchResults) updating; 
+		copyResults(from: ATBatchResults) updating;
 		countAll(
 			set: Boolean; 
-			_value: Integer io) mapping; 
+			_value: Integer io) mapping;
 		durationSecs(
 			set: Boolean; 
-			_value: Decimal io) mapping; 
+			_value: Decimal io) mapping;
 		result(
 			set: Boolean; 
-			_value: String io) mapping; 
+			_value: String io) mapping;
 		success(
 			set: Boolean; 
-			_value: Boolean io) mapping; 
+			_value: Boolean io) mapping;
 		updateAppend(
 			failed: Integer; 
 			exceptioned: Integer; 
 			passed: Integer; 
 			skipped: Integer; 
-			durationAdd: Integer) updating; 
+			durationAdd: Integer) updating;
 	)
 	ATBatchResultsRoot completeDefinition
 	(
 	attributeDefinitions
-		description:                   String[101] readonly; 
-		startTime:                     TimeStamp readonly; 
+		description:                   String[101] readonly;
+		startTime:                     TimeStamp readonly;
 	referenceDefinitions
-		allBatchTests:                 ATBatchResultsSchemaTestsDict  implicitMemberInverse, readonly; 
-		allSchemaTests:                ATBatchResultsSchemaTestsDict  implicitMemberInverse, readonly; 
+		allBatchTests:                 ATBatchResultsSchemaTestsDict  implicitMemberInverse, readonly;
+		allSchemaTests:                ATBatchResultsSchemaTestsDict  implicitMemberInverse, readonly;
  
 	jadeMethodDefinitions
-		create() updating; 
-		delete() updating; 
+		create() updating;
+		delete() updating;
 		getDeveloperCount(): Integer;
-		getDevelopers(): StringArray protected; 
+		getDevelopers(): StringArray protected;
 		getStartTimeISO(): String;
 	)
 	ATBatchResultsSchemaTests completeDefinition
 	(
 	attributeDefinitions
-		abortReason:                   String readonly; 
-		completed:                     Boolean readonly; 
-		count:                         Integer readonly, virtual; 
+		abortReason:                   String readonly;
+		completed:                     Boolean readonly;
+		count:                         Integer readonly, virtual;
 		schemaName:                    String[101];
 	referenceDefinitions
-		allMethods:                    ObjectArray  implicitMemberInverse, readonly; 
-		allTests:                      ATBatchResultsTestDict  implicitMemberInverse, readonly; 
+		allMethods:                    ObjectArray  implicitMemberInverse, readonly;
+		allTests:                      ATBatchResultsTestDict  implicitMemberInverse, readonly;
  
 	jadeMethodDefinitions
-		abort(reason: String) updating; 
-		addTest(entity: SchemaEntity) updating; 
-		copyTests(testsFrom: Collection) updating; 
+		abort(reason: String) updating;
+		addTest(entity: SchemaEntity) updating;
+		copyTests(testsFrom: Collection) updating;
 		count(
 			set: Boolean; 
-			_value: Integer io) mapping; 
-		delete() updating; 
+			_value: Integer io) mapping;
+		delete() updating;
 		hasAborted(): Boolean;
-		lockInResults() updating; 
-		updateId(id: String) updating; 
+		lockInResults() updating;
+		updateId(id: String) updating;
 	)
 	ATBatchResultsTest completeDefinition
 	(
 	attributeDefinitions
-		className:                     String readonly, virtual; 
-		developer:                     String virtual; 
-		entityName:                    String[307] readonly; 
-		errorReason:                   String readonly; 
-		errorSourceLine:               String readonly, virtual; 
-		errorStack:                    String readonly; 
-		lastChanged:                   TimeStamp readonly, virtual; 
-		methodName:                    String readonly, virtual; 
-		schemaName:                    String readonly, virtual; 
+		className:                     String readonly, virtual;
+		developer:                     String virtual;
+		entityName:                    String[307] readonly;
+		errorReason:                   String readonly;
+		errorSourceLine:               String readonly, virtual;
+		errorStack:                    String readonly;
+		lastChanged:                   TimeStamp readonly, virtual;
+		methodName:                    String readonly, virtual;
+		schemaName:                    String readonly, virtual;
 	referenceDefinitions
 		methodReference:               Method;
  
 	jadeMethodDefinitions
 		className(
 			set: Boolean; 
-			_value: String io) mapping; 
-		copyResults(from: ATBatchResultsTest) updating; 
+			_value: String io) mapping;
+		copyResults(from: ATBatchResultsTest) updating;
 		developer(
 			set: Boolean; 
-			_value: String io) mapping; 
+			_value: String io) mapping;
 		errorSourceLine(
 			set: Boolean; 
-			_value: String io) mapping; 
-		getEntityComponent(part: Integer): String protected; 
+			_value: String io) mapping;
+		getEntityComponent(part: Integer): String protected;
 		lastChanged(
 			set: Boolean; 
-			_value: TimeStamp io) mapping; 
+			_value: TimeStamp io) mapping;
 		lastChangedDate(): Date;
 		methodName(
 			set: Boolean; 
-			_value: String io) mapping; 
+			_value: String io) mapping;
 		schemaName(
 			set: Boolean; 
-			_value: String io) mapping; 
+			_value: String io) mapping;
 		updateError(
 			text: String; 
-			stack: String) updating; 
-		updateId(name: String) updating; 
+			stack: String) updating;
+		updateId(name: String) updating;
 	)
 	ATBatchRunner completeDefinition
 	(
 	referenceDefinitions
 		batchSettings:                 ATBatchSettings;
-		controller:                    ATBatchController  readonly; 
-		gc:                            ATGarbageCollector  protected; 
-		locator:                       ATLocator  readonly; 
+		controller:                    ATBatchController  readonly;
+		gc:                            ATGarbageCollector  protected;
+		locator:                       ATLocator  readonly;
 		locatorSettings:               ATLocatorSettings;
 		outputController:              ATBatchOutputController;
-		results:                       ATBatchResultsRoot  readonly, virtual; 
+		results:                       ATBatchResultsRoot  readonly, virtual;
  
 	jadeMethodDefinitions
-		create() updating; 
-		delete() updating; 
+		create() updating;
+		delete() updating;
 		results(
 			set: Boolean; 
-			_value: ATBatchResultsRoot io) mapping; 
-		run(): Boolean updating; 
-		testsFind() protected; 
-		testsOutput() updating, protected; 
-		testsRun() protected; 
+			_value: ATBatchResultsRoot io) mapping;
+		run(): Boolean updating;
+		testsFind() protected;
+		testsOutput() updating, protected;
+		testsRun() protected;
 	)
 	ATBatchRunnerCommand completeDefinition
 	(
 	referenceDefinitions
-		gc:                            ATGarbageCollector  protected; 
+		gc:                            ATGarbageCollector  protected;
 		output:                        ATBatchOutputController;
 		reader:                        IATSettingsReader;
 		runner:                        ATBatchRunner;
  
 	jadeMethodDefinitions
-		create() updating; 
-		delete() updating; 
-		execute() updating; 
+		create() updating;
+		delete() updating;
+		execute() updating;
 	)
 	ATBatchSettings completeDefinition
 	(
@@ -709,25 +709,25 @@ typeDefinitions
 		workers:                       Integer;
  
 	jadeMethodDefinitions
-		create() updating; 
-		getDefaultFolderPath(): String protected; 
+		create() updating;
+		getDefaultFolderPath(): String protected;
 		stringBuild(builder: IATSettingsBuilder): String;
-		stringParse(reader: IATSettingsReader) updating; 
+		stringParse(reader: IATSettingsReader) updating;
 		validate(): String;
 	)
 	ATBatchTestExecuter completeDefinition
 	(
 	referenceDefinitions
-		allTests:                      ObjectArray  implicitMemberInverse, readonly; 
-		applicationContext:            ApplicationContext  protected; 
-		gc:                            ATGarbageCollector  protected; 
+		allTests:                      ObjectArray  implicitMemberInverse, readonly;
+		applicationContext:            ApplicationContext  protected;
+		gc:                            ATGarbageCollector  protected;
 		listener:                      ATBatchListener;
  
 	jadeMethodDefinitions
-		create() updating; 
-		delete() updating; 
-		run() updating; 
-		runTest(tests: ObjectArray) protected; 
+		create() updating;
+		delete() updating;
+		run() updating;
+		runTest(tests: ObjectArray) protected;
 	)
 	ATBatchWorkerInitialiser completeDefinition
 	(
@@ -735,45 +735,45 @@ typeDefinitions
 		ApplicationStartedEvent:       Integer = 320482;
  
 	jadeMethodDefinitions
-		initialiseWorkerApp(batchOfTests: Object) updating; 
+		initialiseWorkerApp(batchOfTests: Object) updating;
 		runAborted(
 			batchOfTests: ATBatchResultsSchemaTests input; 
-			message: String) protected; 
+			message: String) protected;
 		runTests(batchOfTests: ATBatchResultsSchemaTests input);
 		runTestsException(
 			exp: Exception; 
-			batchOfTests: ATBatchResultsSchemaTests input): Integer protected; 
+			batchOfTests: ATBatchResultsSchemaTests input): Integer protected;
 		userNotification(
 			eventType: Integer; 
 			theObject: Object; 
 			eventTag: Integer; 
-			userInfo: Any) updating; 
+			userInfo: Any) updating;
 	)
 	ATJadeUnitTestBatchListener completeDefinition
 	(
 	referenceDefinitions
-		listener:                      ATBatchListener  protected; 
-		outputController:              ATBatchOutputController  protected; 
+		listener:                      ATBatchListener  protected;
+		outputController:              ATBatchOutputController  protected;
  
 	jadeMethodDefinitions
-		create() updating; 
-		delete() updating; 
+		create() updating;
+		delete() updating;
 		finish(
 			elapsedTime: Time; 
 			testsFailed: Integer; 
 			testsSkipped: Integer; 
-			testsSucceeded: Integer) updating, protected; 
-		getOutputSettings(): ATBatchSettings protected; 
-		getResults(): ATBatchResultsRoot protected; 
-		message(messageText: String) protected; 
-		methodSuccess(testMethodName: String) protected; 
-		start(numberOfTestMethods: Integer) protected; 
+			testsSucceeded: Integer) updating, protected;
+		getOutputSettings(): ATBatchSettings protected;
+		getResults(): ATBatchResultsRoot protected;
+		message(messageText: String) protected;
+		methodSuccess(testMethodName: String) protected;
+		start(numberOfTestMethods: Integer) protected;
 		testFailure(
 			testMethodName: String; 
 			callStack: String; 
-			failureReason: String) protected; 
-		testSkipped(testMethodName: String) protected; 
-		testSuccess(testMethodName: String) protected; 
+			failureReason: String) protected;
+		testSkipped(testMethodName: String) protected;
+		testSuccess(testMethodName: String) protected;
 	implementInterfaces
 		JadeTestListenerIF
 		(
@@ -797,7 +797,7 @@ typeDefinitions
 		Lifetime_Persistent:           Character = ATLifetime_Persistent;
 		Lifetime_Transient:            Character = ATLifetime_Transient;
 	attributeDefinitions
-		lifetime:                      Character readonly; 
+		lifetime:                      Character readonly;
 	documentationText
 `Default lifetime for objects created (see constants)
 `
@@ -807,51 +807,51 @@ typeDefinitions
 	documentationText
 `Store of all objects created or modified.`
 
-		dbInternal:                    ATDatabase  protected; 
+		dbInternal:                    ATDatabase  protected;
 	documentationText
 `Default store of created and modified objects.
 
 If db is replaced by the logic, it means we dont leak the default.`
 
-		lastObject:                    Object  protected; 
+		lastObject:                    Object  protected;
 	documentationText
 `Last object created or refined.`
 
  
 	jadeMethodDefinitions
 		asString(): String;
-		cloneObject(from: Object): IATBuilderModify updating; 
+		cloneObject(from: Object): IATBuilderModify updating;
 		cloneObjectWithKey(
 			from: Object; 
 			propKeyChg: Property; 
-			valueKeyChg: Any): IATBuilderModify updating; 
+			valueKeyChg: Any): IATBuilderModify updating;
 		collAdd(
 			collProperty: Property; 
 			valueList: ParamListType): IATBuilderModify;
 		collCopy(
 			collProperty: Property; 
 			values: Collection): IATBuilderModify;
-		create() updating; 
-		delete() updating; 
-		lifetimeSet(lifeTimeConstant: Character) updating; 
-		lifetimeSetPersistent() updating; 
-		lifetimeSetTransient() updating; 
-		make(classType: Class): IATBuilderModify updating; 
+		create() updating;
+		delete() updating;
+		lifetimeSet(lifeTimeConstant: Character) updating;
+		lifetimeSetPersistent() updating;
+		lifetimeSetTransient() updating;
+		make(classType: Class): IATBuilderModify updating;
 		makeObject(
 			fromObject: Object; 
-			typeTo: Class): Object updating, protected; 
+			typeTo: Class): Object updating, protected;
 		propValueGet(
 			target: Object; 
-			prop: Property): Any protected; 
+			prop: Property): Any protected;
 		propValueSet(
 			target: Object input; 
 			prop: Property; 
-			value: Any) protected; 
+			value: Any) protected;
 		propValueSetDecimal(
 			target: Object input; 
 			prop: Property; 
-			value: Decimal) protected; 
-		refine(target: Object): IATBuilderModify updating; 
+			value: Decimal) protected;
+		refine(target: Object): IATBuilderModify updating;
 		result(): Object;
 		set(
 			property: Property; 
@@ -859,7 +859,7 @@ If db is replaced by the logic, it means we dont leak the default.`
 		setInternal(
 			property: Property; 
 			value: Any; 
-			reqdRef: Boolean) protected; 
+			reqdRef: Boolean) protected;
 		setNull(property: Property): IATBuilderModify;
 	implementInterfaces
 		IATBuilderCommands
@@ -885,69 +885,69 @@ If db is replaced by the logic, it means we dont leak the default.`
 	ATChangeTracker completeDefinition
 	(
 	attributeDefinitions
-		changeString:                  String readonly, virtual; 
-		frozen:                        Boolean protected; 
+		changeString:                  String readonly, virtual;
+		frozen:                        Boolean protected;
 		propertyTracking:              Boolean;
 	referenceDefinitions
-		classesToIgnore:               ClassColl  implicitMemberInverse, readonly; 
-		classesToTrack:                ClassColl  implicitMemberInverse, readonly; 
-		objectCollection:              ObjectArray  implicitMemberInverse, protected; 
-		trackedObjects:                ATChangeTrackerObjectDict  implicitMemberInverse, readonly; 
+		classesToIgnore:               ClassColl  implicitMemberInverse, readonly;
+		classesToTrack:                ClassColl  implicitMemberInverse, readonly;
+		objectCollection:              ObjectArray  implicitMemberInverse, protected;
+		trackedObjects:                ATChangeTrackerObjectDict  implicitMemberInverse, readonly;
  
 	jadeMethodDefinitions
 		changeString(
 			set: Boolean; 
-			_value: String io) mapping; 
-		clear() updating; 
+			_value: String io) mapping;
+		clear() updating;
 		compare(): Boolean;
-		create() updating; 
-		delete() updating; 
-		displayChanges(): String protected; 
-		getObjects(objects: Collection input) protected; 
-		startTracking() updating; 
-		stopTracking() updating; 
-		trackingObject(object: Object): Boolean protected; 
+		create() updating;
+		delete() updating;
+		displayChanges(): String protected;
+		getObjects(objects: Collection input) protected;
+		startTracking() updating;
+		stopTracking() updating;
+		trackingObject(object: Object): Boolean protected;
 	)
 	ATChangeTrackerObject completeDefinition
 	(
 	attributeDefinitions
 		status:                        Integer;
-		statusDescription:             String readonly, virtual; 
+		statusDescription:             String readonly, virtual;
 	referenceDefinitions
-		allProperties:                 ObjectArray  implicitMemberInverse, readonly; 
-		allValuesAfter:                ATVariableStringArray  readonly; 
-		allValuesBefore:               ATVariableStringArray  readonly; 
+		allProperties:                 ObjectArray  implicitMemberInverse, readonly;
+		allValuesAfter:                ATVariableStringArray  readonly;
+		allValuesBefore:               ATVariableStringArray  readonly;
 		object:                        Object;
  
 	jadeMethodDefinitions
 		compare(): Boolean;
-		create() updating; 
-		delete() updating; 
-		freeze() updating; 
+		create() updating;
+		delete() updating;
+		freeze() updating;
 		readPropertyValue(
 			receiver: Object; 
-			property: Property): Any protected; 
-		recordProperties(objectClass: Class) protected; 
+			property: Property): Any protected;
+		recordProperties(objectClass: Class) protected;
 		recordPropertyValue(
 			receiver: Object; 
-			property: Property): String protected; 
+			property: Property): String protected;
 		recordPropertyValueCollection(
 			property: Property; 
-			collection: Collection): String protected; 
+			collection: Collection): String protected;
 		recordPropertyValueObject(
 			property: Property; 
-			valueAny: Any): String protected; 
+			valueAny: Any): String protected;
 		recordPropertyValuePrimitive(
 			property: Property; 
-			valueAny: Any): String protected; 
-		recordPropertyValues(values: ATVariableStringArray input) protected; 
+			valueAny: Any): String protected;
+		recordPropertyValues(values: ATVariableStringArray input) protected;
 		recordStart(
 			target: Object; 
-			deep: Boolean) updating; 
-		recordStop() updating; 
+			deep: Boolean) updating;
+		recordStop() updating;
 		statusDescription(
 			set: Boolean; 
-			_value: String io) mapping; 
+			_value: String io) mapping;
 	)
 	ATCommandLineBuilder completeDefinition
 	(
@@ -974,7 +974,7 @@ If db is replaced by the logic, it means we dont leak the default.`
 		commandLine:                   String;
  
 	jadeMethodDefinitions
-		create() updating; 
+		create() updating;
 		parseValue(item: String): String;
 		parseValueWithDefault(
 			item: String; 
@@ -996,30 +996,30 @@ If db is replaced by the logic, it means we dont leak the default.`
 `Store of fixture data to run tests on.`
 
 	attributeDefinitions
-		hasPersistents:                Boolean readonly; 
+		hasPersistents:                Boolean readonly;
 		purgeOnDelete:                 Boolean;
 	referenceDefinitions
-		allInstances:                  Collection  readonly, virtual; 
-		allInstancesArray:             ObjectArray  implicitMemberInverse, protected; 
-		allInstancesSet:               ObjectSet  implicitMemberInverse, protected; 
-		purger:                        ATPurger  protected; 
+		allInstances:                  Collection  readonly, virtual;
+		allInstancesArray:             ObjectArray  implicitMemberInverse, protected;
+		allInstancesSet:               ObjectSet  implicitMemberInverse, protected;
+		purger:                        ATPurger  protected;
  
 	jadeMethodDefinitions
-		add(object: Object) updating; 
+		add(object: Object) updating;
 		allInstances(
 			set: Boolean; 
-			_value: Collection io) mapping; 
+			_value: Collection io) mapping;
 		classCount(classType: Class): Integer;
 		classInstances(
 			classType: Class; 
 			includeSubclasses: Boolean; 
 			coll: Collection input);
-		clear() updating; 
-		create() updating; 
-		delete() updating; 
+		clear() updating;
+		create() updating;
+		delete() updating;
 		find(
 			classType: Class; 
-			instance: Integer): Object protected; 
+			instance: Integer): Object protected;
 		get(
 			classType: Class; 
 			instance: Integer; 
@@ -1030,7 +1030,7 @@ If db is replaced by the logic, it means we dont leak the default.`
 			object: Any output);
 		includes(object: Object): Boolean;
 		instances(): Collection;
-		purge() updating; 
+		purge() updating;
 	implementInterfaces
 		IATDatabaseCommands
 		(
@@ -1051,7 +1051,7 @@ If db is replaced by the logic, it means we dont leak the default.`
 		timeout:                       Integer;
  
 	jadeMethodDefinitions
-		create() updating; 
+		create() updating;
 		install();
 		start();
 		stop();
@@ -1059,24 +1059,24 @@ If db is replaced by the logic, it means we dont leak the default.`
 	ATFileLogger completeDefinition
 	(
 	referenceDefinitions
-		myFile:                        JadeLog  protected; 
+		myFile:                        JadeLog  protected;
  
 	jadeMethodDefinitions
-		close() updating; 
-		delete() updating; 
-		initialise(fileName: String) updating; 
-		writeContents(message: String) updating; 
+		close() updating;
+		delete() updating;
+		initialise(fileName: String) updating;
+		writeContents(message: String) updating;
 	)
 	ATFileWriter completeDefinition
 	(
 	referenceDefinitions
-		myFile:                        File  protected; 
+		myFile:                        File  protected;
  
 	jadeMethodDefinitions
-		close() updating; 
-		delete() updating; 
-		initialise(fileName: String) updating; 
-		writeContents(message: String) updating; 
+		close() updating;
+		delete() updating;
+		initialise(fileName: String) updating;
+		writeContents(message: String) updating;
 	)
 	ATFixtureMaker completeDefinition
 	(
@@ -1086,18 +1086,18 @@ If db is replaced by the logic, it means we dont leak the default.`
 By defining pre-requisites this class will manage execution order and calling of 'static' functions.`
 
 	referenceDefinitions
-		allMethodsExecuted:            ObjectSet  implicitMemberInverse, protected; 
+		allMethodsExecuted:            ObjectSet  implicitMemberInverse, protected;
 	documentationText
 `Recorder of all methods executed so we only run once.`
 
-		applicationContext:            ApplicationContext  protected; 
+		applicationContext:            ApplicationContext  protected;
 	documentationText
 `Methods need to be run in the context of the user schema.
 `
 
 		builder:                       ATBuilder;
 		events:                        IATFixtureMakerEvents;
-		lastResult:                    Object  readonly; 
+		lastResult:                    Object  readonly;
 	documentationText
 `Result object from the last execution.`
 
@@ -1108,17 +1108,17 @@ can have some context eg. current user, current date.`
 
  
 	jadeMethodDefinitions
-		clear() updating; 
-		create() updating; 
-		eventBuilt() updating, protected; 
-		eventCleared() updating, protected; 
-		eventMethodTarget(functionName: String): Method protected; 
-		eventStarted() updating, protected; 
-		execute(mth: Method): Object updating; 
-		executeInternal(mth: Method) updating, protected; 
+		clear() updating;
+		create() updating;
+		eventBuilt() updating, protected;
+		eventCleared() updating, protected;
+		eventMethodTarget(functionName: String): Method protected;
+		eventStarted() updating, protected;
+		execute(mth: Method): Object updating;
+		executeInternal(mth: Method) updating, protected;
 		register(
 			currentMethod: JadeMethod; 
-			prerequisiteMethods: ParamListType) updating; 
+			prerequisiteMethods: ParamListType) updating;
 		result(): Object;
 	implementInterfaces
 		IATFixtureMaker
@@ -1137,27 +1137,27 @@ can have some context eg. current user, current date.`
 	attributeDefinitions
 		force:                         Boolean;
 	referenceDefinitions
-		allObjects:                    ObjectSet  implicitMemberInverse, protected; 
-		allSharedGCs:                  ObjectSet   explicitInverse, protected; 
+		allObjects:                    ObjectSet  implicitMemberInverse, protected;
+		allSharedGCs:                  ObjectSet   explicitInverse, protected;
  
 	jadeMethodDefinitions
 		add(object: Object);
-		addCollection(items: Collection) updating; 
-		addItems(items: ParamListType) updating; 
-		clear() updating; 
-		delete() updating; 
+		addCollection(items: Collection) updating;
+		addItems(items: ParamListType) updating;
+		clear() updating;
+		delete() updating;
 		gcGet(): IATGarbageCollector;
-		gcShare(otherGCOwner: IATGarbageCollectorShared) updating, protected; 
+		gcShare(otherGCOwner: IATGarbageCollectorShared) updating, protected;
 		includes(object: Object): Boolean;
-		purge() updating; 
+		purge() updating;
 		purgeExceptionHandler(
 			exp: Exception; 
-			errored: Boolean output): Integer protected; 
-		purgeForce() updating, protected; 
-		purgeForceObject(object: Object io) protected; 
+			errored: Boolean output): Integer protected;
+		purgeForce() updating, protected;
+		purgeForceObject(object: Object io) protected;
 		remove(object: Object);
-		shareObjectsWith(otherGCOwner: IATGarbageCollectorShared) updating; 
-		transferToSharedGCs() updating, protected; 
+		shareObjectsWith(otherGCOwner: IATGarbageCollectorShared) updating;
+		transferToSharedGCs() updating, protected;
 	implementInterfaces
 		IATGarbageCollector
 		(
@@ -1181,38 +1181,38 @@ can have some context eg. current user, current date.`
 		UnitTestIgnore:                Integer = 32;
 		UnitTestInclude:               Integer = 1;
 	attributeDefinitions
-		annotations:                   StringArray readonly; 
-		annotationsAvoid:              StringArray readonly; 
+		annotations:                   StringArray readonly;
+		annotationsAvoid:              StringArray readonly;
 		createdEndDate:                Date;
 		createdStartDate:              Date;
 		methodPrefix:                  String[31];
 	referenceDefinitions
-		classes:                       ClassColl  implicitMemberInverse, protected; 
-		unitTests:                     MethodColl  implicitMemberInverse, readonly; 
+		classes:                       ClassColl  implicitMemberInverse, protected;
+		unitTests:                     MethodColl  implicitMemberInverse, readonly;
  
 	jadeMethodDefinitions
-		addAll() updating; 
-		addClass(cls: Class) updating; 
+		addAll() updating;
+		addClass(cls: Class) updating;
 		addClassName(
 			schemaName: String; 
-			className: String) updating; 
+			className: String) updating;
 		addClasses(
 			targetSchema: Schema; 
-			parentClass: Class) updating; 
+			parentClass: Class) updating;
 		addClassesDown(
 			targetSchema: Schema; 
-			parentClass: Class) updating; 
+			parentClass: Class) updating;
 		addMethod(meth: Method);
 		addSchema(
 			schema: Schema; 
-			subschemas: Boolean) updating; 
-		addSchemaName(schemaName: String) updating; 
-		applySettings(settings: ATLocatorSettings) updating; 
+			subschemas: Boolean) updating;
+		addSchemaName(schemaName: String) updating;
+		applySettings(settings: ATLocatorSettings) updating;
 		includeMethod(meth: Method): Boolean;
-		includeMethodCreationDate(meth: Method): Boolean protected; 
+		includeMethodCreationDate(meth: Method): Boolean protected;
 		sourceAnnotationExists(
 			meth: Method; 
-			annotation: String): Boolean protected; 
+			annotation: String): Boolean protected;
 	)
 	ATLocatorSettings completeDefinition
 	(
@@ -1221,13 +1221,13 @@ can have some context eg. current user, current date.`
 		ItemAnnotationsAvoid:          String = "annotationsAvoid";
 		ItemSchemas:                   String = "TestSchemas";
 	attributeDefinitions
-		annotations:                   StringArray readonly; 
-		annotationsAvoid:              StringArray readonly; 
-		schemas:                       JadeIdentifierArray readonly; 
+		annotations:                   StringArray readonly;
+		annotationsAvoid:              StringArray readonly;
+		schemas:                       JadeIdentifierArray readonly;
  
 	jadeMethodDefinitions
 		stringBuild(builder: IATSettingsBuilder): String;
-		stringParse(reader: IATSettingsReader) updating; 
+		stringParse(reader: IATSettingsReader) updating;
 		validate(): String;
 	)
 	ATMock completeDefinition
@@ -1241,15 +1241,15 @@ zcode functions from AutomatedTestSchema need to be copied and defined on the im
 		NameForMethodCalledEvent:      String = "mockMethodCalledEvent";
 		NameForMethodCalledList:       String = "mockMethodCalledList";
 	attributeDefinitions
-		compiled:                      Boolean protected; 
+		compiled:                      Boolean protected;
 		suffixMethodCount:             String[11];
 	referenceDefinitions
-		allInstances:                  ObjectArray  implicitMemberInverse, protected; 
-		allMockedMethods:              ObjectArray  implicitMemberInverse, protected; 
-		applicationContext:            ApplicationContext  protected; 
-		gc:                            ATGarbageCollector  protected; 
-		persistentClass:               Class  protected; 
-		transientClass:                Class  readonly; 
+		allInstances:                  ObjectArray  implicitMemberInverse, protected;
+		allMockedMethods:              ObjectArray  implicitMemberInverse, protected;
+		applicationContext:            ApplicationContext  protected;
+		gc:                            ATGarbageCollector  protected;
+		persistentClass:               Class  protected;
+		transientClass:                Class  readonly;
  
 	jadeMethodDefinitions
 		addAttribute(
@@ -1258,84 +1258,84 @@ zcode functions from AutomatedTestSchema need to be copied and defined on the im
 		addReference(
 			name: String; 
 			type: Type): Reference;
-		compile() updating; 
-		create() updating; 
+		compile() updating;
+		create() updating;
 		createClassInternal(
 			transientClassParam: Class; 
 			persistentClassParam: Class; 
-			applicationContextParam: ApplicationContext) updating, protected; 
-		createTransient(): Object updating; 
-		delete() updating; 
-		deleteClass() updating; 
+			applicationContextParam: ApplicationContext) updating, protected;
+		createTransient(): Object updating;
+		delete() updating;
+		deleteClass() updating;
 		methodCallCount(
 			receiver: Object; 
 			methodRefOrName: Any): Integer;
-		methodCallCountPropertyName(methodName: String): String protected; 
+		methodCallCountPropertyName(methodName: String): String protected;
 		methodCalled(
 			receiver: Object; 
 			methodReference: JadeMethod): Boolean;
-		methodGet(methodName: String): ATMockMethod protected; 
-		methodOverride(meth: Method): IATMockMethod updating; 
-		methodRemove(methodName: String): Boolean protected; 
-		zcode_createClass(persistentClass: Class): Class updating; 
+		methodGet(methodName: String): ATMockMethod protected;
+		methodOverride(meth: Method): IATMockMethod updating;
+		methodRemove(methodName: String): Boolean protected;
+		zcode_createClass(persistentClass: Class): Class updating;
 	)
 	ATMockMethod completeDefinition
 	(
 	attributeDefinitions
-		compileAttempted:              Boolean protected; 
-		errorContent:                  String readonly; 
-		errorMessage:                  String readonly; 
-		methodName:                    String readonly; 
-		propCountName:                 String[101] protected; 
-		raiseErrorCode:                Integer protected; 
-		raiseErrorDescription:         String protected; 
-		sourceCode:                    String readonly, virtual; 
-		sourceCodeBody:                String protected; 
-		sourceCodeHeader:              String protected; 
-		sourceCodeOverride:            String protected; 
-		sourceCodeReturnValue:         String protected; 
-		sourceCodeVars:                String protected; 
+		compileAttempted:              Boolean protected;
+		errorContent:                  String readonly;
+		errorMessage:                  String readonly;
+		methodName:                    String readonly;
+		propCountName:                 String[101] protected;
+		raiseErrorCode:                Integer protected;
+		raiseErrorDescription:         String protected;
+		sourceCode:                    String readonly, virtual;
+		sourceCodeBody:                String protected;
+		sourceCodeHeader:              String protected;
+		sourceCodeOverride:            String protected;
+		sourceCodeReturnValue:         String protected;
+		sourceCodeVars:                String protected;
 	referenceDefinitions
-		myParentMethod:                Method  protected; 
-		myReturnType:                  Type  protected; 
-		myTransClass:                  Class  protected; 
-		myTransMethod:                 JadeMethod  protected; 
+		myParentMethod:                Method  protected;
+		myReturnType:                  Type  protected;
+		myTransClass:                  Class  protected;
+		myTransMethod:                 JadeMethod  protected;
  
 	jadeMethodDefinitions
-		compile() updating; 
+		compile() updating;
 		compileError(
 			code: String; 
 			errorCode: Integer; 
 			errorPos: Integer; 
-			errorLength: Integer) updating, protected; 
-		doNothing(): IATMockMethod updating; 
-		generateMethodHeader(meth: Method) updating, protected; 
-		generatePropertyCounter() updating, protected; 
-		generateReturnValue(valueAsText: String) updating, protected; 
-		generateSource(): String updating, protected; 
-		getReturnType(): Type updating, protected; 
+			errorLength: Integer) updating, protected;
+		doNothing(): IATMockMethod updating;
+		generateMethodHeader(meth: Method) updating, protected;
+		generatePropertyCounter() updating, protected;
+		generateReturnValue(valueAsText: String) updating, protected;
+		generateSource(): String updating, protected;
+		getReturnType(): Type updating, protected;
 		initialiseMethodOverride(
 			transClass: Class; 
 			meth: Method; 
-			callCountPropName: String) updating; 
+			callCountPropName: String) updating;
 		raisesException(
 			errorCode: Integer; 
-			errorDesc: String): IATMockMethod updating; 
-		remove() updating; 
-		returns(any: Any): IATMockMethod updating; 
+			errorDesc: String): IATMockMethod updating;
+		remove() updating;
+		returns(any: Any): IATMockMethod updating;
 		returnsEntityValue(
 			receiver: Object; 
-			methodOrProperty: Feature): IATMockMethod updating, protected; 
+			methodOrProperty: Feature): IATMockMethod updating, protected;
 		returnsMethodValue(
 			receiver: Object; 
-			meth: Method): IATMockMethod updating; 
+			meth: Method): IATMockMethod updating;
 		returnsPropertyValue(
 			receiver: Object; 
-			property: Property): IATMockMethod updating; 
+			property: Property): IATMockMethod updating;
 		sourceCode(
 			set: Boolean; 
-			_value: String io) updating, mapping; 
-		withSource(source: String): IATMockMethod updating; 
+			_value: String io) updating, mapping;
+		withSource(source: String): IATMockMethod updating;
 	implementInterfaces
 		IATMockMethod
 		(
@@ -1350,12 +1350,12 @@ zcode functions from AutomatedTestSchema need to be copied and defined on the im
 	ATPurger completeDefinition
 	(
 	referenceDefinitions
-		allObjectsToDelete:            ObjectArray  implicitMemberInverse, protected; 
+		allObjectsToDelete:            ObjectArray  implicitMemberInverse, protected;
  
 	jadeMethodDefinitions
-		deleteObjectLevel10(object: Object io) protected; 
-		deleteObjectLevel20(object: Object io) protected; 
-		exceptionHander(exp: Exception): Integer protected; 
+		deleteObjectLevel10(object: Object io) protected;
+		deleteObjectLevel20(object: Object io) protected;
+		exceptionHander(exp: Exception): Integer protected;
 		purge(collection: Collection input);
 	)
 	ATSchemaEntityFinder completeDefinition
@@ -1373,7 +1373,7 @@ zcode functions from AutomatedTestSchema need to be copied and defined on the im
 		findSchema(schemaName: String): Schema;
 		getQualifiedComponent(
 			full: String; 
-			part: Integer): String protected; 
+			part: Integer): String protected;
 	)
 	ATSchemaFileCleaner completeDefinition
 	(
@@ -1381,17 +1381,38 @@ zcode functions from AutomatedTestSchema need to be copied and defined on the im
 `Removes envirommental info from scm files to assist with source control integration.`
 
 	attributeDefinitions
-		contents:                      String;
+		chunkCount:                    Integer protected;
+		typeHeaderPassed:              Boolean protected;
  
 	jadeMethodDefinitions
-		clean() updating; 
-		getHeaderEndPosition(): Integer protected; 
-		removeJCFLine() updating, protected; 
-		removeLine(pos: Integer) updating, protected; 
-		removeParameter(posStart: Integer) updating, protected; 
-		removeParameters(text: String) updating, protected; 
-		removeSetModifiedTime() updating, protected; 
-		replaceJadeVersion() updating, protected; 
+		cleanChunk(chunk: String): String updating, protected;
+		cleanFile(filePath: String) updating;
+		clear() updating, protected;
+		fileChunk(
+			fileFrom: File; 
+			unprocessed: String io): String protected;
+		filesFinalise(
+			filePath: String; 
+			fileFrom: File io; 
+			fileTo: File io; 
+			success: Boolean) protected;
+		filesInitialise(
+			filePath: String; 
+			fileFrom: File output; 
+			fileTo: File output) protected;
+		getEndOfHeaderPosition(chunk: String): Integer protected;
+		removeJCFLine(chunk: String io) updating, protected;
+		removeJadeVersion(chunk: String io) updating, protected;
+		removeLine(
+			chunk: String io; 
+			pos: Integer) protected;
+		removeParameter(
+			chunk: String io; 
+			posStart: Integer) updating, protected;
+		removeParameters(
+			chunk: String io; 
+			text: String) updating, protected;
+		removeSetModifiedTime(chunk: String io) updating, protected;
 	)
 	ATVariableCollection completeDefinition
 	(
@@ -1401,25 +1422,25 @@ zcode functions from AutomatedTestSchema need to be copied and defined on the im
 See subclass documentation.`
 
 	attributeDefinitions
-		allBytes:                      JadeBytes protected; 
+		allBytes:                      JadeBytes protected;
 	documentationText
 `Store of all text
 
 Generally all array entries are appended to each other with offsets being saved on the IntegerArrays`
 
-		allIndexLength:                IntegerArray protected; 
+		allIndexLength:                IntegerArray protected;
 	documentationText
 `Saves the length of each entry in the JadeBytes structure`
 
-		allIndexStart:                 Integer64Array protected; 
+		allIndexStart:                 Integer64Array protected;
 	documentationText
 `Saves start index positions in the JadeByte structure`
 
  
 	jadeMethodDefinitions
-		add(entry: Any) updating, abstract; 
-		at(index: Integer64): Any abstract; 
-		clear() updating; 
+		add(entry: Any) updating, abstract;
+		at(index: Integer64): Any abstract;
+		clear() updating;
 		copy(toColl: ATVariableCollection input);
 		copyTo(toColl: Collection input);
 		display(): String;
@@ -1427,12 +1448,12 @@ Generally all array entries are appended to each other with offsets being saved 
 		footPrintEstimateSet(capacity: Integer64);
 		isEmpty(): Boolean;
 		isEqual(collection: Object): Boolean;
-		lockEntry() protected; 
-		lockExit() protected; 
+		lockEntry() protected;
+		lockExit() protected;
 		parse(
 			line: String; 
-			delimiters: String) updating; 
-		rebuild() updating; 
+			delimiters: String) updating;
+		rebuild() updating;
 		size(): Integer64;
 	)
 	ATVariableStringArray completeDefinition
@@ -1473,18 +1494,18 @@ Possible Future Enhancements:
 
  
 	jadeMethodDefinitions
-		add(entry: String) updating; 
+		add(entry: String) updating;
 		at(index: Integer64): String;
 		atPut(
 			index: Integer; 
-			entry: String) updating; 
+			entry: String) updating;
 		includes(entry: String): Boolean;
 		indexOf(entry: String): Integer64;
 		insert(
 			index: Integer64; 
-			entry: String) updating; 
-		remove(entry: String) updating; 
-		removeAt(inx: Integer64): String updating; 
+			entry: String) updating;
+		remove(entry: String) updating;
+		removeAt(inx: Integer64): String updating;
 	)
 	ATXmlBuilder completeDefinition
 	(
@@ -1495,12 +1516,12 @@ Possible Future Enhancements:
 	jadeMethodDefinitions
 		append(
 			line: String; 
-			padding: Integer) updating; 
-		appendCData(contents: String) updating; 
-		appendLine(line: String) updating; 
-		clear() updating; 
-		padDown() updating; 
-		padUp() updating; 
+			padding: Integer) updating;
+		appendCData(contents: String) updating;
+		appendLine(line: String) updating;
+		clear() updating;
+		padDown() updating;
+		padUp() updating;
 	)
 	Exception completeDefinition
 	(
@@ -1524,14 +1545,11 @@ Possible Future Enhancements:
 	(
  
 	jadeMethodDefinitions
-		cleanSchemaFiles() protected; 
-		runBatchForCurrentSchemaTreeToCSV() protected; 
-		runBatchForDataSchemaToJenkins() protected; 
-		runBatchForEnvironment() protected; 
-		runBatchForEnvironmentToFile() protected; 
-	)
-	JadeTestCase completeDefinition
-	(
+		cleanSchemaFiles() protected;
+		runBatchForCurrentSchemaTreeToCSV() protected;
+		runBatchForDataSchemaToJenkins() protected;
+		runBatchForEnvironment() protected;
+		runBatchForEnvironmentToFile() protected;
 	)
 	WebSession completeDefinition
 	(
@@ -2927,99 +2945,68 @@ generateString( root : ATBatchResultsRoot )
 vars
 	schemaTests		: ATBatchResultsSchemaTests;
 	testResult		: ATBatchResultsTest;
-	iterScm			: Iterator;
-	iterTest		: Iterator;
-	builder			: ATXmlBuilder;
-	errorTag		: String;
-	errorType		: String;
-		
+	xmlDocument		: JadeXMLDocument;
+	xmlRoot			: JadeXMLElement;
+	xmlTestSuite	: JadeXMLElement;
+	xmlTestCase		: JadeXMLElement;
+	xmlResult		: JadeXMLElement;
+	
 begin
-	create builder transient;
 
-	builder.appendLine( '<?xml version="1.0" encoding="UTF-8"?>' );
+	create xmlDocument transient;
+	xmlRoot := xmlDocument.addElement('testsuites');
+		xmlRoot.addAttribute('name', 'UnitTests');
+		xmlRoot.addAttribute('time', root.duration.String);
+		xmlRoot.addAttribute('tests', root.countAll.String);
+		xmlRoot.addAttribute('failures', root.countFailed.String);
+		xmlRoot.addAttribute('errors', root.countExceptioned.String);
 	
-	builder.appendLine( '<testsuites name="%1" time="%2" tests="%3" failures="%4" errors="%5">'.atPrint( 
-				"UnitTests",
-				root.duration,
-				root.countAll,
-				root.countFailed,
-				root.countExceptioned ));
+	foreach schemaTests in root.allSchemaTests do
 	
-	builder.padUp();
-	
-	iterScm	:= root.allSchemaTests.createIterator();
-	while iterScm.next( schemaTests ) do
-	
-		// xml testsuite
-		builder.appendLine( '<testsuite name="%1" tests="%2" skipped="%3" failed="%4" errors="%5" hostname="%6" timestamp="%7" time="%8">'.atPrint (
-						schemaTests.schemaName, 
-						schemaTests.countAll,
-						schemaTests.countSkipped,
-						schemaTests.countFailed,
-						schemaTests.countExceptioned,
-						app.computerName,
-						root.getStartTimeISO(),
-						schemaTests.durationSecs ));
-						
-		builder.padUp();
+		xmlTestSuite := xmlRoot.addElement("testsuite");
+			xmlTestSuite.addAttribute('name', schemaTests.schemaName);
+			xmlTestSuite.addAttribute('tests', schemaTests.countAll.String);
+			xmlTestSuite.addAttribute('skipped', schemaTests.countSkipped.String);
+			xmlTestSuite.addAttribute('failed', schemaTests.countFailed.String);
+			xmlTestSuite.addAttribute('errors', schemaTests.countExceptioned.String);
+			xmlTestSuite.addAttribute('hostname', app.computerName);
+			xmlTestSuite.addAttribute('timestamp', root.getStartTimeISO());
+			xmlTestSuite.addAttribute('time', schemaTests.durationSecs.String);
+				
+		foreach testResult in schemaTests.allTests do
 		
-		iterTest	:= schemaTests.allTests.createIterator();
-		while iterTest.next( testResult ) do
+			xmlTestCase := xmlTestSuite.addElement("testcase");
+				xmlTestCase.addAttribute('name', testResult.className& "::" & testResult.methodName);
+				xmlTestCase.addAttribute('classname', testResult.entityName);
+				xmlTestCase.addAttribute('time', testResult.durationSecs.String);
 
-			// xml testcase
-			builder.append( '<testcase name="%1" classname="%2" time="%3"'.atPrint (
-						testResult.className& "::" & testResult.methodName,
-						testResult.entityName,
-						testResult.durationSecs ), builder.pad );
-			
-			errorTag	:= "";
+			xmlResult := null;
 			if testResult.countFailed > 0 then
-				errorTag	:= "failure";
-				errorType	:= 'assert';
+				xmlResult := xmlTestCase.addElement('failure');
+				xmlResult.addAttribute('type', 'assert');
+
 			elseif testResult.countExceptioned > 0 then
-				errorTag	:= "error";
-				errorType	:= 'exception';
+				xmlResult := xmlTestCase.addElement('error');
+				xmlResult.addAttribute('type', 'exception');
 			endif;
 			
-			if errorTag <> null then
-						
-				builder.append( ">" & CrLf, 0 );
-				
-				builder.padUp();
-				builder.append( '<%1 name="%1" type="%2" message="%3">'.atPrint (
-						errorTag,
-						errorType,
-						testResult.errorReason ), builder.pad );
-				
-				builder.append( CrLf, 0 );
-				builder.appendCData( "Line:" & CrLf & testResult.errorSourceLine & CrLf & CrLf & "Stack:" & CrLf & testResult.errorStack );
-				
-				builder.appendLine( '</' & errorTag & '>' );
-				builder.padDown();
-				
-				builder.appendLine( '</testcase>' );
-			else
-				builder.append( '/>' & CrLf, 0 );		// finish off on the same line for readability
-			endif;	
-			
-		endwhile;
-		
-		builder.padDown();
-		builder.appendLine( '</testsuite>' );
+			if xmlResult <> null then
+				xmlResult.addAttribute('name', xmlResult.tagName);
+				xmlResult.addAttribute('message', testResult.errorReason.StringUtf8.asPlainText());
+				xmlResult.addCDATA("Line:" & CrLf & testResult.errorSourceLine & CrLf & CrLf & "Stack:" & CrLf & testResult.errorStack);
+			endif;
 	
-		delete iterTest;
-	endwhile;
-								
-	builder.padDown();
-	builder.appendLine( '</testsuites>' );
+		endforeach;
 		
-	return builder.xml;
+	endforeach;
+
+	return '<?xml version="1.0" encoding="utf-8" ?>' & CrLf & xmlRoot.writeToString();
 	
 epilog
-	delete builder;
-	delete iterScm;
-end;
 
+	delete xmlDocument;
+	
+end;
 
 }
 
@@ -8055,66 +8042,251 @@ end;
 	)
 	ATSchemaFileCleaner (
 	jadeMethodSources
-clean
+cleanChunk
 {
-clean() updating;
+cleanChunk( chunk : String ): String protected, updating;
 
 vars
-
+	new				: String;
+	
 begin
-	removeSetModifiedTime();
+	chunkCount	+= 1;
 	
-	removeJCFLine();
+	if typeHeaderPassed then
+		return chunk;
+	endif;
 	
-	replaceJadeVersion();
+	typeHeaderPassed	:= getEndOfHeaderPosition( chunk ) > 0;
+	new					:= chunk;
 	
-	removeParameters("number =");
-	removeParameters("number=");
+	if chunkCount = 1 then
+		removeJCFLine( new );
+		removeJadeVersion( new );
 	
-	removeParameters("patchVersion=");
-	removeParameters("patchVersioningEnabled =");
+	endif;			
 	
-	removeParameters("ordinal =");
-	removeParameters("highestOrdinal =");
+	removeSetModifiedTime( new );
 	
-	removeParameters("subId =");
-	removeParameters("highestSubId =");
+	removeParameters( new, "number =" );
+	removeParameters( new, "number=" );
+	removeParameters( new, "patchVersion=" );
+	removeParameters( new, "patchVersioningEnabled =" );
+	removeParameters( new, "ordinal =" );
+	removeParameters( new, "highestOrdinal =" );
+	removeParameters( new, "subId =" );
+	removeParameters( new, "highestSubId =" );
+	
+	return new;
 end;
 
 }
 
-getHeaderEndPosition
+cleanFile
 {
-getHeaderEndPosition() : Integer protected;
+cleanFile( filePath : String ) updating;
 
 vars
-	startPosition	: Integer;
+	fileFrom	: File;
+	fileTo		: File;
+	chunkFrom	: String;
+	chunkTo		: String;
+	chunkCarry	: String;
+	success		: Boolean;
 	
 begin
-	startPosition		:= contents.pos( CrLf & "typeSources" & CrLf, 1 );
-	if startPosition = 0 then
-		return contents.length();
+	clear();
+
+	filesInitialise( filePath, fileFrom, fileTo );
+
+	// process the file in chunks	
+	while true do
+		chunkFrom	:= fileChunk( fileFrom, chunkCarry );
+		chunkTo		:= cleanChunk( chunkFrom );
+		fileTo.writeString( chunkTo );
+		
+		if chunkFrom = null then
+			break;
+		endif;
+	endwhile;
+	
+	if chunkCarry <> null then
+		chunkTo		:= cleanChunk( chunkCarry );
+		fileTo.writeString( chunkTo );
+	endif;
+	
+	success		:= true;
+	
+epilog
+	filesFinalise( filePath, fileFrom, fileTo, success );
+end;
+
+}
+
+clear
+{
+clear() updating, protected;
+
+vars
+
+begin
+	chunkCount	:= 0;
+	typeHeaderPassed	:= false;
+end;
+
+}
+
+fileChunk
+{
+fileChunk( fileFrom 	: File;
+		   unprocessed	: String io 
+					   ): String protected;
+
+constants
+	ReadSize = 12000;
+					   
+vars
+	chunk	: String;
+	pos		: Integer;
+	
+begin
+	// get a new chunk
+	chunk	:= unprocessed;
+	while not fileFrom.endOfFile do
+		chunk	&= fileFrom.readString( ReadSize );
+		pos     := chunk.reversePos( Cr );	
+		if pos > 1 then		// 1 could be the last one again
+			break;
+		endif;
+	endwhile;
+	
+	// rollback to the last CrLf
+	if pos > 0 then
+		unprocessed		:= chunk[pos:end];
+		chunk			:= chunk[1:pos-1];
 	else
-		return startPosition;
-	endif;	
+		unprocessed		:= null;	
+	endif;
+	return chunk;
+end;
+
+}
+
+filesFinalise
+{
+filesFinalise( filePath : String;
+			   fileFrom : File io;
+			   fileTo   : File io;
+			   success	: Boolean ) protected;
+
+vars
+
+begin
+	if success then
+		// rename the new back to the original
+		fileFrom.purge();
+		
+		fileTo.close();
+		fileTo.rename( filePath );
+	
+	else
+		if fileFrom <> null then
+			fileFrom.close();
+		endif;
+		if fileTo <> null then
+			fileTo.close();
+		endif;	
+	endif;
+	
+epilog
+	delete fileFrom;
+	delete fileTo;
+end;
+
+}
+
+filesInitialise
+{
+filesInitialise( filePath : String;
+				 fileFrom : File output;
+				 fileTo	  : File output ) protected;
+
+vars
+	fileRenamed		: String;
+	
+begin
+	// from file
+	create fileFrom transient;
+	fileFrom.fileName	:= filePath;
+	app.require( fileFrom.isAvailable, "File does not exist:" & filePath );
+	fileFrom.openInput(filePath);
+	
+	// to file
+	fileRenamed	:= filePath & ".scm";
+	create fileTo transient;
+	fileTo.fileName	:= fileRenamed;
+	if fileTo.isAvailable() then
+		fileTo.purge();
+	endif;
+	fileTo.openOutput( fileRenamed );
+end;
+
+}
+
+getEndOfHeaderPosition
+{
+getEndOfHeaderPosition(chunk : String): Integer protected;
+
+vars
+
+begin
+	return chunk.pos( CrLf & "typeSources", 1 );
 end;
 
 }
 
 removeJCFLine
 {
-removeJCFLine() protected, updating;
+removeJCFLine( chunk : String io) protected, updating;
 
 vars
 	endPos		: Integer;
 	startPos	: Integer;
 	
 begin
-	endPos		:= contents.pos( CrLf, 1 );
-	startPos	:= contents.pos( "JADE COMMAND FILE NAME", 1 );
-
+	endPos		:= chunk.pos( CrLf, 1 );
+	endPos		:= chunk.pos( CrLf, endPos + 1 );
+	endPos		:= chunk.pos( CrLf, endPos + 1 );
+	
+	startPos	:= chunk.pos( "JADE COMMAND FILE NAME", 1 );
 	if startPos > 0 and startPos < endPos then
-		removeLine(startPos);	
+		removeLine(chunk, startPos);	
+	endif;
+	
+	startPos	:= chunk.pos( "JADE RPS MAPPING FILE", 1 );
+	if startPos > 0 and startPos < endPos then
+		removeLine(chunk, startPos);	
+	endif;
+end;
+
+}
+
+removeJadeVersion
+{
+removeJadeVersion( chunk : String io) protected, updating;
+
+vars
+	endPos		: Integer;
+	startPos	: Integer;
+	
+begin
+	endPos		:= chunk.pos( "schemaDefinition", 1 );
+	startPos	:= chunk.pos( 'jadeVersionNumber "', 1 );
+	
+	if startPos > 0 and startPos < endPos then
+		startPos	:= chunk.pos( '"', 1 );
+		endPos		:= chunk.pos( '"', startPos+1 );
+		
+		chunk	:= chunk[1:startPos] & '20.0.02' & chunk[endPos:end];
 	endif;
 end;
 
@@ -8122,140 +8294,131 @@ end;
 
 removeLine
 {
-removeLine(pos : Integer) protected, updating;
+removeLine( chunk	: String io;
+			pos 	: Integer) protected;
 
 vars
 	posStart	: Integer;
 	posEnd		: Integer;
+	new			: String;
 	
 begin
-	posStart	:= contents.reversePosIndex( CrLf, pos );
-	if posStart = 0 then
-		posStart	:= 1;
+	posStart	:= chunk.reversePosIndex( CrLf, pos );
+	if posStart > 1 then
+		new		:= chunk[1:posStart-1];
 	endif;
 	
-	posEnd		:= contents.pos( CrLf, pos );
-	if posEnd = 0 then
-		posEnd	:= contents.length();
+	posEnd		:= chunk.pos( CrLf, pos );
+	if posEnd > 0 then
+		new		:= new & chunk[posEnd:end];
 	endif;
 	
-	if posStart = 1 then
-		contents	:= contents[posEnd:end];
-	else
-		contents	:= contents[1:posStart-1] & contents[posEnd:end];
-	endif;
+	chunk	:= new;
 end;
 
 }
 
 removeParameter
 {
-removeParameter( posStart : Integer ) updating, protected;
+removeParameter( chunk		: String io;
+				 posStart   : Integer ) updating, protected;
 
 vars
-	contentsBefore	: String;
-	contentsAfter	: String;
-	contentsBridge	: String;
-	hasEntryBefore	: Boolean;
-	hasEntryAfter	: Boolean;
-	hasNoMarker		: Boolean;
 	posEnd			: Integer;
+	pos				: Integer;
+	new				: String;
+	prefix			: String;
+	suffix			: String;
 	
 begin
-	// build the text before
-	contentsBefore	:= contents[1:posStart-1].trimBlanks();
-	hasEntryBefore	:= contentsBefore[contentsBefore.length] = ",";
-	
-	// find the end
-	posEnd	:= posStart;
-	contents.scanUntil( ";,", posEnd );
-	hasNoMarker		:= contents.pos( CrLf, posStart ) < posEnd;
-	if hasNoMarker then
-		hasEntryAfter	:= false;
-		posEnd			:= contents.pos( CrLf, posStart );
-		contentsAfter	:= contents[posEnd:end].trimBlanks();
+	// find the start
+	pos	:= posStart;
+	while pos > 0 do
+		prefix	:= chunk[pos];
+		if prefix <> " " then
+			break;		
+		endif;
+		pos		:= pos - 1;
+	endwhile;
+	if prefix = "," then
+		new		:= chunk[1:pos-1];
 	else
-		hasEntryAfter	:= contents[posEnd] <> ";";
-		contentsAfter	:= contents[posEnd+1:end].trimBlanks();
+		new		:= chunk[1:pos];
 	endif;
 
-	// join back together
-	contentsBridge	:= " ";
-	if hasEntryAfter = false then
-		if hasNoMarker then
-	
-		elseif hasEntryBefore then
-			contentsBefore[contentsBefore.length]	:= ";";
-		else
-			contentsBridge	:= ";";
-		endif;
+	// find the end
+	pos		:= posStart;
+	while pos < chunk.length do
+		pos		:= pos + 1;
+		suffix	:= chunk[pos];
+		if suffix = "," 
+		or suffix = Cr 
+		or suffix = ";" then
+			break;
+		endif;		
+	endwhile;
+
+	if suffix = "," and prefix <> "," then
+		pos	:= pos + 1;
 	endif;
-	contents	:= contentsBefore & contentsBridge & contentsAfter;
+
+	if pos <= chunk.length then
+		new	:= new & chunk[pos:end];
+	endif;
+	chunk		:= new;
 end;
 }
 
 removeParameters
 {
-removeParameters( text : String ) updating, protected;
+removeParameters( chunk   : String io;
+				  text    : String ) updating, protected;
 
 vars
-	startPosition	: Integer;
-	
+	pos	: Integer;
+
 begin
-	startPosition := getHeaderEndPosition();
+	pos		:= getEndOfHeaderPosition(chunk);
 	
-	while true do
-		startPosition		:= startPosition - 1;
-		startPosition		:= contents.reversePosIndex( " " & text, startPosition );
-		if startPosition = 0 then
+	while chunk.length > text.length do
+		if pos = 0
+		or pos > chunk.length then
+			pos	:= chunk.length;
+		endif;
+		
+		pos		:= chunk.reversePosIndex( " " & text, pos );
+		if pos = 0 then
 			break;
 		endif;
 	
-		removeParameter(startPosition);
+		removeParameter(chunk, pos);
 	endwhile;
 end;
 }
 
 removeSetModifiedTime
 {
-removeSetModifiedTime() updating, protected;
+removeSetModifiedTime( chunk 	: String io ) protected, updating;
 
 vars
 	pos		: Integer;
 	
 begin
-	pos		:= getHeaderEndPosition();
+	pos		:= getEndOfHeaderPosition(chunk);
 	
 	while true do
-		pos		:= contents.reversePosIndex( Tab & "setModifiedTimeStamp ", pos );
+		if pos = 0
+		or pos > chunk.length then
+			pos	:= chunk.length;
+		endif;
+
+		pos		:= chunk.reversePosIndex( Tab & "setModifiedTimeStamp ", pos );
 		if pos = 0 then
 			break;
 		endif;
 	
-		removeLine( pos );
+		removeLine( chunk, pos );
 	endwhile;
-end;
-
-}
-
-replaceJadeVersion
-{
-replaceJadeVersion() protected, updating;
-
-vars
-	endPos		: Integer;
-	startPos	: Integer;
-	
-begin
-	endPos		:= contents.pos( "schemaDefinition", 1 );
-	startPos	:= contents.pos( 'jadeVersionNumber "', 1 );
-	
-	if startPos > 0 and startPos < endPos then
-		startPos	:= contents.pos( '"', 1 );
-		endPos		:= contents.pos( '"', startPos+1 );
-		
-		contents	:= contents[1:startPos] & '16.0.02' & contents[endPos:end];
-	endif;
 end;
 
 }
@@ -8934,39 +9097,9 @@ begin
 	// convert each file
 	foreach fileCount in 1 to cmdFile.getMultiSelectCount() do
 		filename	:= cmdFile.getMultiSelectDirectory() & "\" & cmdFile.getMultiSelectFileTitle(fileCount);
-		fileRenamed	:= filename & ".scm";
-	
-		// move the original file
-		create fileFrom transient;
-		fileFrom.fileName	:= fileRenamed;
-		if fileFrom.isAvailable() then
-			fileFrom.purge();
-		endif;
-		fileFrom.fileName	:= filename;
-		fileFrom.rename( fileRenamed );
-		fileFrom.fileName	:= fileRenamed;
-		fileFrom.open();
-		contents	:= fileFrom.readString( fileFrom.fileLength() );
-			
-		// clean the file
+		
 		create cleaner transient;
-		cleaner.contents	:= contents;
-		cleaner.clean();
-		
-		// create the replacement file
-		create fileTo transient;
-		fileTo.fileName		:= filename;
-		fileTo.open();
-		fileTo.writeString( cleaner.contents );
-		fileTo.commit();
-		
-		// remove old file
-		if not PreserveOldFile then
-			fileFrom.purge();
-		endif;		
-		
-		delete fileFrom;
-		delete fileTo;
+		cleaner.cleanFile( filename );
 		delete cleaner;
 	endforeach;
 	
